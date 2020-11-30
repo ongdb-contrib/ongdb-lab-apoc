@@ -296,11 +296,6 @@ public class DateUtil {
         return -1;
     }
 
-    public static void main(String[] args) {
-        long l = standardizeDate("2020-11-26T08:47:38", false);
-        System.out.println(l);
-    }
-
     //<6>、defineDate标准化处理【多字段选举的基础上再增加这个逻辑】【位数不一致的补齐为14位】
     //时间变量中部分有效的就保留，无效的做处理
     //暂定1900-当前年份算有效时间
@@ -357,7 +352,7 @@ public class DateUtil {
         Long standardMonth = Long.valueOf(standardMonthStr);
         boolean isLeapYear = standardYear % 4 == 0 && standardYear % 100 != 0;
         //当前已补全的年月所对应的日范围
-        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear + standardMonthStr);
+        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear +""+ standardMonth);
         if (day >= 1 && day <= maxDay) {
             standardTime.append(dayStr);
         } else {
@@ -390,128 +385,7 @@ public class DateUtil {
         return Long.valueOf(standardTime.toString());
     }
 
-    public static long getDefineDate(long releaseDate, long startDate, long endDate, long updateDate, long currentDate) {
-        //<6>、defineDate标准化处理【多字段选举的基础上再增加这个逻辑】【位数不一致的补齐为14位】
-        //时间变量中部分有效的就保留，无效的做处理
-        //暂定1900-当前年份算有效时间
-        List<Long> dateList = new ArrayList<>();
-        //对时间进行补全处理
-        processingInvalidTime(releaseDate, currentDate, dateList);
-        processingInvalidTime(startDate, currentDate, dateList);
-        processingInvalidTime(endDate, currentDate, dateList);
-        processingInvalidTime(updateDate, currentDate, dateList);
-        dateList.add(currentDate);
-        return Collections.min(dateList);
-    }
-
-    //<6>、defineDate标准化处理【多字段选举的基础上再增加这个逻辑】【位数不一致的补齐为14位】
-    //时间变量中部分有效的就保留，无效的做处理
-    //暂定1900-当前年份算有效时间
-    //对时间进行补全处理
-    private static void processingInvalidTime(long invalidTime, long currentDate, List<Long> dateList) {
-        //标准时间
-        StringBuffer standardTime = new StringBuffer("");
-        //当前时间
-        String currentDateStr = String.valueOf(currentDate);
-
-        //-1和未来时间不处理
-        if (invalidTime < 0) {
-            return;
-        }
-        //标准时间位数为14位，不足则补齐，多则截取
-        //时间转字符
-        String invalidTimeStr = String.valueOf(invalidTime);
-        //相差长度  例：负数为需截取长度   正数为需拼接长度
-        int differenceLength = 14 - invalidTimeStr.length();
-        //截取
-        if (differenceLength < 0) {
-            invalidTimeStr = invalidTimeStr.substring(0, 14);
-        } else if (differenceLength > 0) {
-            //拼接
-            StringBuffer stringBuffer = new StringBuffer("");
-            for (int i = 0; i < differenceLength; i++) {
-                stringBuffer.append("0");
-            }
-            invalidTimeStr = invalidTimeStr + stringBuffer.toString();
-        }
-        //位数补齐后依次判断年月日时分秒是否有效
-        //补全年
-        String yearStr = invalidTimeStr.substring(0, 4);
-        long year = Long.valueOf(yearStr);
-        String currentYearStr = currentDateStr.substring(0, 4);
-        long currentYear = Long.valueOf(currentYearStr);
-        if (year >= 1990 && year <= currentYear) {
-            standardTime.append(year);
-        } else {
-            standardTime.append(currentYearStr);
-        }
-        //补全月
-        String monthStr = invalidTimeStr.substring(4, 6);
-        long month = Long.valueOf(monthStr);
-        if (month >= 1 && month <= 12) {
-            standardTime.append(month);
-        } else {
-            standardTime.append("12");
-        }
-        //补全日
-        String dayStr = invalidTimeStr.substring(6, 8);
-        long day = Long.valueOf(dayStr);
-        //当前已补全的年
-        String standardYearStr = standardTime.substring(0, 4);
-        Long standardYear = Long.valueOf(standardYearStr);
-        //当前已补全的月
-        String standardMonthStr = standardTime.substring(4);
-        Long standardMonth = Long.valueOf(standardMonthStr);
-        boolean isLeapYear = standardYear % 4 == 0 && standardYear % 100 != 0;
-        //当前已补全的年月所对应的日范围
-        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear + standardMonthStr);
-        if (day >= 1 && day <= maxDay) {
-            standardTime.append(day);
-        } else {
-            standardTime.append(maxDay);
-        }
-        //补全时
-        String timeStr = invalidTimeStr.substring(8, 10);
-        long time = Long.valueOf(timeStr);
-        if (time >= 0 && time <= 23) {
-            standardTime.append(timeStr);
-        } else {
-            standardTime.append("00");
-        }
-        //补全分
-        String minuteStr = invalidTimeStr.substring(10, 12);
-        long minute = Long.valueOf(minuteStr);
-        if (minute >= 0 && minute <= 59) {
-            standardTime.append(minuteStr);
-        } else {
-            standardTime.append("00");
-        }
-        //补全秒
-        String secondStr = invalidTimeStr.substring(12);
-        long second = Long.valueOf(secondStr);
-        if (second >= 0 && second <= 59) {
-            standardTime.append(secondStr);
-        } else {
-            standardTime.append("00");
-        }
-        dateList.add(Long.valueOf(standardTime.toString()));
-    }
-
     public static long getCurrentDate() {
         return Long.valueOf(new SimpleDateFormat("YYYYMMddHHmmss").format(new Date()));
     }
-
-    /*public static void main(String[] args) {
-     *//*String str = "202001011230121";
-        String substring = str.substring(4, 6);
-        Long aLong = Long.valueOf(substring);
-        System.out.println(aLong);*//*
-        Long a = Long.valueOf("1200023112121");
-        Long b = getCurrentDate();
-        List<Long> aa = new ArrayList<>();
-        processingInvalidTime(a,b,aa);
-        for (Long time:aa) {
-            System.out.println(time);
-        }
-    }*/
 }
