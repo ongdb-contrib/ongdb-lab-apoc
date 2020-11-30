@@ -55,6 +55,16 @@ public class DateUtilTest {
         System.out.println(DateUtil.standardizeDate(null, false));
         System.out.println(DateUtil.standardizeDate("", true));
         System.out.println(DateUtil.standardizeDate(null, true));
+        System.out.println(DateUtil.standardizeDate(20181030, true));
+        System.out.println(DateUtil.standardizeDate("20180130", false));
+        System.out.println(DateUtil.standardizeDate(20180530, true));
+        System.out.println(DateUtil.standardizeDate("20180530", false));
+    }
+
+    @Test
+    public void test04() {
+        System.out.println(DateUtil.standardizeDate(20181030, true));
+        System.out.println(DateUtil.standardizeDate("20180130", false));
     }
 }
 
