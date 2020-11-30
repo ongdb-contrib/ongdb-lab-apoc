@@ -6,10 +6,10 @@
 
     <groupId>data.lab.engineering</groupId>
     <artifactId>ongdb-lab-apoc</artifactId>
-    <version>3.5.17</version>
+    <version>3.5.22</version>
 
     <properties>
-        <neo4j.version>3.5.17</neo4j.version>
+        <neo4j.version>3.5.22</neo4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
