@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
  */
 public class StringVerify {
 
+    private static final Pattern IS_CONTAIN_CHINESE_PATTERN = Pattern.compile("[\u4e00-\u9fa5]");
+
     /**
      * 校验一个字符是否是汉字
      *
@@ -58,8 +60,7 @@ public class StringVerify {
      * @warn 不能校验是否为中文标点符号
      */
     public boolean isContainChinese(String str) {
-        Pattern p = Pattern.compile("[\u4e00-\u9fa5]");
-        Matcher m = p.matcher(str);
+        Matcher m = IS_CONTAIN_CHINESE_PATTERN.matcher(str);
         if (m.find()) {
             return true;
         }

@@ -184,6 +184,18 @@ public class Procedures {
     /**
      * @param
      * @return
+     * @Description: TODO(转换数据编码格式)
+
+     */
+    @UserFunction(name = "olab.data.encode")
+    @Description("【直接编码】默认编码为中文")
+    public String dataForEncode(@Name("data") String data,@Name("encode") String encode) {
+        return null;
+    }
+
+    /**
+     * @param
+     * @return
      * @Description: TODO(对字符进行编码 - 【 先提取中文英文 】 默认编码为中文)
      * 1、提取英文中文
      * 2、大写转为小写 、 繁体转为简体
