@@ -368,6 +368,7 @@ public class DateUtil {
         }
         //补全分
         String minuteStr = invalidTimeStr.substring(10, 12);
+
         long minute = Long.valueOf(minuteStr);
         if (minute >= 0 && minute <= 59) {
             standardTime.append(minuteStr);
