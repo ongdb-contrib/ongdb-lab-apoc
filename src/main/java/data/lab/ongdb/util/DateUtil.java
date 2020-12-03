@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Yc-Ma
@@ -264,7 +265,24 @@ public class DateUtil {
      * @return
      * @Description: TODO(标准化时间字段)
      */
-    public static long standardizeDate(Object object, boolean isStdDate) {
+    public static long standardizeDate(Object object,boolean isStdDate,String sort){
+        long aLong = new Long(-1);
+        if (object instanceof List){
+            aLong = standardizeDateList(object, sort);
+        }
+        if (aLong > 0){
+            return aLong;
+        }
+        return isStdDate(isStdDate);
+    }
+
+    /**
+     * @param object:时间相关的对象
+     * @param isStdDate:无效OBJECT是否默认补充系统时间
+     * @return
+     * @Description: TODO(标准化时间字段)
+     */
+    public static long standardizeDate(Object object,boolean isStdDate){
         long aLong = new Long(-1);
         if (object instanceof String) {
             Matcher m = PATTERN_MATCH_NUMBER.matcher((String) object);
@@ -273,35 +291,65 @@ public class DateUtil {
                 String r = m.group(0);
                 result.append(r);
             }
-            if (!"".equals(result.toString())) {
+            if (!"".equals(result.toString())){
                 aLong = Long.valueOf(result.toString());
             }
-        } else if (object instanceof Long) {
+        }else if (object instanceof Long) {
             aLong = ((Long) object).longValue();
-        } else if (object instanceof Integer) {
+        }else if (object instanceof Integer) {
             aLong = ((Integer) object).intValue();
-        } else if (object instanceof Date) {
+        }else if (object instanceof Date) {
             aLong = Long.valueOf(new SimpleDateFormat("YYYYMMddHHmmss").format((Date) object));
         }
-        if (aLong > 0) {
+
+        if (aLong > 0){
             return processingInvalidTime(aLong);
         }
         return isStdDate(isStdDate);
     }
 
     /**
-     * @param object:时间相关的对象
-     * @param isStdDate:无效OBJECT是否默认补充系统时间
-     * @param sort:降序排列还是升序排列              ASC('asc') DESC('desc') RANDOM('random')
+     * 将objectList标准化时间后返回
+     * @param object
+     * @param sort
      * @return
-     * @Description: TODO(标准化时间字段)
      */
-    public static long standardizeDate(Object object, boolean isStdDate, String sort) {
-        if (object instanceof List) {
-            return standardizeDateList(object, sort);
-        } else {
-            return standardizeDate(object, isStdDate);
+    private static long standardizeDateList(Object object, String sort) {
+        List<Object> objectList = (List<Object>) object;
+
+        List<Long> standardizeDateList = new ArrayList<>();
+        for (Object obj: objectList) {
+            long l = standardizeDate(obj, false);
+            if (l > 0){
+                standardizeDateList.add(l);
+            }
         }
+
+        if (!standardizeDateList.isEmpty()){
+            return standardizeDateListSorted(standardizeDateList,sort);
+        }
+
+        return -1;
+    }
+
+    /**
+     * 标准化时间后的列表根据排序参数取值
+     * @param standardizeDateList
+     * @param sort
+     * @return
+     */
+    private static long standardizeDateListSorted(List<Long> standardizeDateList, String sort) {
+        if ("sequence".equals(sort.toLowerCase())){
+            return standardizeDateList.get(0);
+        }
+        standardizeDateList = standardizeDateList.stream().sorted().collect(Collectors.toList());
+        if ("desc".equals(sort.toLowerCase())){
+            return standardizeDateList.get(standardizeDateList.size()-1);
+        }else if ("random".equals(sort.toLowerCase())){
+            int index = Math.abs(new Random().nextInt()) % standardizeDateList.size();
+            return standardizeDateList.get(index);
+        }
+        return standardizeDateList.get(0);
     }
 
     private static long isStdDate(boolean isStdDate) {
@@ -367,7 +415,7 @@ public class DateUtil {
         Long standardMonth = Long.valueOf(standardMonthStr);
         boolean isLeapYear = standardYear % 4 == 0 && standardYear % 100 != 0;
         //当前已补全的年月所对应的日范围
-        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear + "" + standardMonth);
+        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear +""+ standardMonth);
         if (day >= 1 && day <= maxDay) {
             standardTime.append(dayStr);
         } else {
@@ -383,7 +431,6 @@ public class DateUtil {
         }
         //补全分
         String minuteStr = invalidTimeStr.substring(10, 12);
-
         long minute = Long.valueOf(minuteStr);
         if (minute >= 0 && minute <= 59) {
             standardTime.append(minuteStr);

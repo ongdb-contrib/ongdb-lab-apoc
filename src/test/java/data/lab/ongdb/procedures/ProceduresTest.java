@@ -827,7 +827,20 @@ public class ProceduresTest {
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put("object","20200110");
         hashMap.put("isStdDate",false);
-        Result result = db.execute("RETURN olab.standardize.date({object},{isStdDate}) AS value", hashMap);
+        Result result = db.execute("RETURN olab.standardize.date({object},{isStdDate},NULL) AS value", hashMap);
+        long string = (long) result.next().get("value");
+        System.out.println(string);
+    }
+
+    @Test
+    public void standardizeDateList() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+        List<Object> list = Arrays.asList(new Long[]{20201201L,201912L,2020L});
+        hashMap.put("object",list);
+        hashMap.put("isStdDate",false);
+        hashMap.put("selection","ASC");
+        Result result = db.execute("RETURN olab.standardize.date({object},{isStdDate},{selection}) AS value", hashMap);
         long string = (long) result.next().get("value");
         System.out.println(string);
     }

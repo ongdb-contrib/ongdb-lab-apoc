@@ -72,9 +72,12 @@ public class DateUtilTest {
     @Test
     public void test05() {
         List<Object> objectList = new ArrayList<>();
+        objectList.add("-1");
+        objectList.add("2020");
         objectList.add("20181030");
         objectList.add(-1);
         objectList.add("2020-11-26 08:47:38.0");
+        objectList.add("2020");
         /**
          * 传入参数为LIST的时候
          * 1、LIST中所有字段无效才无效【都无效再补充系统时间】
@@ -83,12 +86,22 @@ public class DateUtilTest {
         /**
          * @param object:时间相关的对象
          * @param isStdDate:无效OBJECT是否默认补充系统时间
-         * @param sort:降序排列还是升序排列 ASC('asc') DESC('desc') RANDOM('random')
+         * @param sort:
+         *            ASC('asc') 升序排序拿第一条
+         *            DESC('desc') 降序排序拿第一条
+         *            RANDOM('random') 随机拿第一条
+         *            SEQUENCE('sequence') 按照列表序列拿有效的第一条
          * @return
          * @Description: TODO(标准化时间字段)
          */
-        long time = DateUtil.standardizeDate(objectList, true, "ASC");
-        System.out.println(time);
+        System.out.println(DateUtil.standardizeDate(objectList, true, "desc"));
+        System.out.println(DateUtil.standardizeDate(objectList, true, "ASC"));
+        System.out.println(DateUtil.standardizeDate(objectList, true, "random"));
+        System.out.println(DateUtil.standardizeDate(objectList, false, "desc"));
+        System.out.println(DateUtil.standardizeDate(objectList, false, "ASC"));
+        System.out.println(DateUtil.standardizeDate(objectList, false, "random"));
+        System.out.println(DateUtil.standardizeDate(objectList, false, "SEQUENCE"));
+        System.out.println(DateUtil.standardizeDate(objectList, false, "sequence"));
     }
 }
 
