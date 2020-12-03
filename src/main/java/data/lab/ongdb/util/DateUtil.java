@@ -289,6 +289,21 @@ public class DateUtil {
         return isStdDate(isStdDate);
     }
 
+    /**
+     * @param object:时间相关的对象
+     * @param isStdDate:无效OBJECT是否默认补充系统时间
+     * @param sort:降序排列还是升序排列              ASC('asc') DESC('desc') RANDOM('random')
+     * @return
+     * @Description: TODO(标准化时间字段)
+     */
+    public static long standardizeDate(Object object, boolean isStdDate, String sort) {
+        if (object instanceof List) {
+            return standardizeDateList(object, sort);
+        } else {
+            return standardizeDate(object, isStdDate);
+        }
+    }
+
     private static long isStdDate(boolean isStdDate) {
         if (isStdDate) {
             return getCurrentDate();
@@ -352,7 +367,7 @@ public class DateUtil {
         Long standardMonth = Long.valueOf(standardMonthStr);
         boolean isLeapYear = standardYear % 4 == 0 && standardYear % 100 != 0;
         //当前已补全的年月所对应的日范围
-        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear +""+ standardMonth);
+        Integer maxDay = GET_DAY_BY_MONTH_MAP.get(isLeapYear + "" + standardMonth);
         if (day >= 1 && day <= maxDay) {
             standardTime.append(dayStr);
         } else {

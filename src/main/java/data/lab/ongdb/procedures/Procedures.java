@@ -185,11 +185,10 @@ public class Procedures {
      * @param
      * @return
      * @Description: TODO(转换数据编码格式)
-
      */
     @UserFunction(name = "olab.data.encode")
     @Description("【直接编码】默认编码为中文")
-    public String dataForEncode(@Name("data") String data,@Name("encode") String encode) {
+    public String dataForEncode(@Name("data") String data, @Name("encode") String encode) {
         return null;
     }
 
@@ -210,13 +209,19 @@ public class Procedures {
     /**
      * @param object:时间相关的对象
      * @param isStdDate:无效OBJECT是否默认补充系统时间
+     * @param selection:【可选参数】选举方式ASC('asc')\DESC('desc')\RANDOM('random')
      * @return
-     * @Description: TODO(【标准化时间字段：对无效时间对象是否去噪】)
+     * @Description: TODO(【 标准化时间字段 ： 对无效时间对象是否去噪 】)
      */
     @UserFunction(name = "olab.standardize.date")
     @Description("【标准化时间字段：对无效时间对象是否去噪】")
-    public Long standardizeDate(@Name("object") Object object, @Name("isStdDate")Boolean isStdDate) {
-        return DateUtil.standardizeDate(object, isStdDate);
+    public Long standardizeDate(@Name("object") Object object, @Name("isStdDate") Boolean isStdDate, @Name("selection") String selection) {
+        if (object instanceof List) {
+            selection = (selection == null || "".equals(selection)) ? "ASC" : selection;
+            return DateUtil.standardizeDate(object, isStdDate, selection);
+        } else {
+            return DateUtil.standardizeDate(object, isStdDate);
+        }
     }
 
     /**
