@@ -182,14 +182,18 @@ public class Procedures {
     }
 
     /**
-     * @param
+     * @param map:MAP对象
+     * @param keys:需要移除的字段列表
      * @return
-     * @Description: TODO(转换数据编码格式)
+     * @Description: TODO(重置MAP - 移除传入的KEY)
      */
-    @UserFunction(name = "olab.data.encode")
-    @Description("【直接编码】默认编码为中文")
-    public String dataForEncode(@Name("data") String data, @Name("encode") String encode) {
-        return null;
+    @UserFunction(name = "olab.reset.map")
+    @Description("重置MAP-移除传入的KEY")
+    public Map<String, Object> resetMap(@Name("map") Map<String, Object> map, @Name("keys") List<String> keys) {
+        for (String key : keys) {
+            map.remove(key);
+        }
+        return map;
     }
 
     /**

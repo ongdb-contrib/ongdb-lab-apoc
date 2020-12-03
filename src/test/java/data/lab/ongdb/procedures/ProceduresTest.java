@@ -737,7 +737,7 @@ public class ProceduresTest {
     public void olabString() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         Map<String, Object> hashMap = new HashMap<>();
-        hashMap.put("string","國際生打撒3.$#%@#$GuangDong Rongjun Co");
+        hashMap.put("string", "國際生打撒3.$#%@#$GuangDong Rongjun Co");
 //        Result result = db.execute("RETURN olab.string.matchCnEn({string}) AS value", hashMap);
 //        Result result = db.execute("RETURN olab.string.toLowerCase({string}) AS value", hashMap);
 //        Result result = db.execute("RETURN olab.string.toSimple({string}) AS value", hashMap);
@@ -825,9 +825,9 @@ public class ProceduresTest {
     public void standardizeDate() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         Map<String, Object> hashMap = new HashMap<>();
-        hashMap.put("object","20200110");
-        hashMap.put("isStdDate",false);
-        Result result = db.execute("RETURN olab.standardize.date({object},{isStdDate},NULL) AS value", hashMap);
+        hashMap.put("object", "20200110");
+        hashMap.put("isStdDate", false);
+        Result result = db.execute("RETURN olab.standardize.date({object},{isStdDate},null) AS value", hashMap);
         long string = (long) result.next().get("value");
         System.out.println(string);
     }
@@ -836,13 +836,31 @@ public class ProceduresTest {
     public void standardizeDateList() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         Map<String, Object> hashMap = new HashMap<>();
-        List<Object> list = Arrays.asList(new Long[]{20201201L,201912L,2020L});
-        hashMap.put("object",list);
-        hashMap.put("isStdDate",false);
-        hashMap.put("selection","ASC");
+        List<Object> list = Arrays.asList(new Long[]{20201201L, 201912L, 2020L});
+        hashMap.put("object", list);
+        hashMap.put("isStdDate", false);
+        hashMap.put("selection", "ASC");
         Result result = db.execute("RETURN olab.standardize.date({object},{isStdDate},{selection}) AS value", hashMap);
         long string = (long) result.next().get("value");
         System.out.println(string);
+    }
+
+    @Test
+    public void resetMap() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+        List<String> list = Arrays.asList(new String[]{"key", "testKey"});
+        hashMap.put("map", list);
+        Map<String, Object> keys = new HashMap<>();
+        keys.put("testKey", 21);
+        keys.put("key", "testTony");
+        keys.put("threeKey", "testTony3");
+        hashMap.put("map", keys);
+        hashMap.put("keys", list);
+        Result result = db.execute("RETURN olab.reset.map({map},{keys}) AS value", hashMap);
+        Map<String, Object> map = (Map<String, Object>) result.next().get("value");
+        // RETURN olab.reset.map({total: 1,committed: 1,failed: 0},['total','failed'])
+        System.out.println(map.size());
     }
 }
 
