@@ -107,6 +107,7 @@ MATCH (n) WHERE n.name='A' WITH n CALL olab.index.addNodeChineseFulltextIndex(n,
 match (n) return olab.convert.json(n) limit 10
 match p=(n)-[]-() return olab.convert.json(p) limit 1
 match (n) return olab.convert.json(properties(n)) limit 10
+RETURN apoc.convert.fromJsonList(olab.convert.json(['21','123',123]))
 ```
 
 ### 12、更多过程与函数请参考源码和测试...
