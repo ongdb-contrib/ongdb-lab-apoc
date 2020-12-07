@@ -7,7 +7,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
 import org.neo4j.harness.junit.Neo4jRule;
 
-import java.util.List;
+import java.util.*;
 
 /*
  *
@@ -61,5 +61,22 @@ public class PathFilterTest {
         System.out.println(operatorSortList);
     }
 
+    @Test
+    public void convertJson() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+//        List<Object> list = Arrays.asList(new Long[]{20201201L, 201912L, 2020L});
+//        List<Object> list = Arrays.asList(new String[]{"20201201L", "201912L", "2020L"});
+        List<Object> list = new ArrayList<>();
+        HashMap<String,Object> dataMap = new HashMap<>();
+        dataMap.put("key1","data");
+        dataMap.put("key2","data");
+        dataMap.put("key3","data");
+        list.add(dataMap);
+        hashMap.put("object", list);
+        Result result = db.execute("RETURN olab.convert.json({object}) AS value", hashMap);
+        String string = (String) result.next().get("value");
+        System.out.println(string);
+    }
 }
 

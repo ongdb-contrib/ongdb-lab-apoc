@@ -55,6 +55,8 @@ public class FileUtil {
 
     private static final Pattern PATTERN_MATCH_CnEn = Pattern.compile("[\\u4e00-\\u9fa5a-zA-Z]");
 
+    private static final Pattern PATTERN_MATCH_CnEn_NUM = Pattern.compile("[\\u4e00-\\u9fa5a-zA-Z0-9]");
+
     /**
      * 从文件中读取最后处理的id
      *
@@ -402,6 +404,24 @@ public class FileUtil {
         if (source != null && !"".equals(source)) {
             StringBuilder result = new StringBuilder();
             Matcher m = PATTERN_MATCH_CnEn.matcher(source);
+            while (m.find()) {
+                String r = m.group(0);
+                result.append(r);
+            }
+            return result.toString();
+        }
+        return source;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(提取英文中文和数字)
+     */
+    public static String matchCnEnNum(String source) {
+        if (source != null && !"".equals(source)) {
+            StringBuilder result = new StringBuilder();
+            Matcher m = PATTERN_MATCH_CnEn_NUM.matcher(source);
             while (m.find()) {
                 String r = m.group(0);
                 result.append(r);

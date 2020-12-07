@@ -306,7 +306,30 @@ RETURN olab.string.encode('國際生打撒3.$#%@#$GuangDong Rongjun Co') AS valu
 #【先提取中文英文】默认编码为中文
 RETURN olab.string.encodeEncCnc('國際生打撒3.$#%@#$GuangDong Rongjun Co') AS value;
 ```
-## 27、集合转换
+## 27、集合转换【CSV格式转为mapList】【数据封装格式转换】
 ```
 RETURN olab.structure.mergeToListMap(['area_code','author'],[['001','HORG001'],['002','HORG002']])
 ```
+
+## 28、【CSV格式转为mapList】【数据封装格式转换】
+```
+RETURN olab.structure.mergeToListMap({fields},{items}) AS value
+RETURN olab.structure.mergeToListMap(['area_code','author'],[['001','HORG001'],['002','HORG002']])
+```
+
+## 29、标准化时间字段【可选是否对无效时间对象是否去噪】【保留14位LONG类型数字】
+```
+RETURN olab.standardize.date({object},{isStdDate},{selection}) AS value
+RETURN olab.standardize.date(202011,true,NULL);
+RETURN olab.standardize.date('202011',true,NULL);
+RETURN olab.standardize.date('2020-11-26 08:47:38.0',true,NULL);
+RETURN olab.standardize.date('2020-11-26T08:47:38',true,NULL);
+RETURN olab.standardize.date([20201201,-1,201912,2020,"dasd"],TRUE,'ASC')
+```
+
+## 30、重置MAP - 移除传入的KEY
+```
+RETURN olab.reset.map({map},{keys}) AS value
+RETURN olab.reset.map({total: 1,committed: 1,failed: 0},['total','failed'])
+```
+

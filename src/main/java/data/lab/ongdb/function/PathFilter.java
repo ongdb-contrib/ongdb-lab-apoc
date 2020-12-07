@@ -142,6 +142,8 @@ public class PathFilter {
             return packPath((Path) object).toJSONString();
         } else if (object instanceof Map) {
             return JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
+        } else if (object instanceof List) {
+            return JSONArray.parseArray(JSON.toJSONString(object)).toJSONString();
         }
         return "";
     }
