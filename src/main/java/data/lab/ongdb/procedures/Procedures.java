@@ -885,37 +885,39 @@ public class Procedures {
             // 获取原始值
             Object rawObjValue = object.get(key);
             Object value = filterMap.get(key);
-            if (value instanceof Map) {
-                Map<String, Object> map = (Map<String, Object>) value;
-                Object valueF = map.get("value");
-                String conditionF = String.valueOf(map.get("condition"));
-                if (CONDITION_MAP.containsKey(conditionF) && (valueF instanceof Long || valueF instanceof Integer || valueF instanceof Double)) {
-                    String[] conds = CONDITION_MAP.get(conditionF);
-                    for (String cond : conds) {
-                        if (condList.contains(cond)) {
-                            if (">".equals(cond)) {
-                                // 满足条件返回true，不满条件返回false
-                                if (!gt(rawObjValue, valueF)) {
-                                    return false;
-                                }
-                            } else if (">=".equals(cond)) {
-                                if (!gte(rawObjValue, valueF)) {
-                                    return false;
-                                }
-                            } else if ("<".equals(cond)) {
-                                if (!lt(rawObjValue, valueF)) {
-                                    return false;
-                                }
-                            } else if ("<=".equals(cond)) {
-                                if (!lte(rawObjValue, valueF)) {
-                                    return false;
+            if (rawObjValue != null && value != null) {
+                if (value instanceof Map) {
+                    Map<String, Object> map = (Map<String, Object>) value;
+                    Object valueF = map.get("value");
+                    String conditionF = String.valueOf(map.get("condition"));
+                    if (CONDITION_MAP.containsKey(conditionF) && (valueF instanceof Long || valueF instanceof Integer || valueF instanceof Double)) {
+                        String[] conds = CONDITION_MAP.get(conditionF);
+                        for (String cond : conds) {
+                            if (condList.contains(cond)) {
+                                if (">".equals(cond)) {
+                                    // 满足条件返回true，不满条件返回false
+                                    if (!gt(rawObjValue, valueF)) {
+                                        return false;
+                                    }
+                                } else if (">=".equals(cond)) {
+                                    if (!gte(rawObjValue, valueF)) {
+                                        return false;
+                                    }
+                                } else if ("<".equals(cond)) {
+                                    if (!lt(rawObjValue, valueF)) {
+                                        return false;
+                                    }
+                                } else if ("<=".equals(cond)) {
+                                    if (!lte(rawObjValue, valueF)) {
+                                        return false;
+                                    }
                                 }
                             }
                         }
-                    }
-                } else if (valueF instanceof String) {
-                    if (!String.valueOf(valueF).equals(String.valueOf(rawObjValue))) {
-                        return false;
+                    } else if (valueF instanceof String) {
+                        if (!String.valueOf(valueF).equals(String.valueOf(rawObjValue))) {
+                            return false;
+                        }
                     }
                 }
             }
