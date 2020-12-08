@@ -851,6 +851,7 @@ public class Procedures {
     @UserFunction(name = "olab.samplingByDate.filter.jsonArray")
     @Description("RETURN olab.samplingByDate.filter.jsonArray(rawJson)")
     public String samplingByDateJsonArray(@Name("jsonString") String jsonString, @Name("dateField") String dateField, @Name("dateValue") Long dateValue, @Name("filterMap") Map<String, Object> filterMap) {
+        JSONObject object = new JSONObject();
         if (jsonString != null && !"".equals(jsonString)) {
             JSONArray rawJson = JSONArray.parseArray(jsonString);
             /**
@@ -870,7 +871,6 @@ public class Procedures {
             }
             return samplingByDateJsonArray(filterArray.toJSONString(), dateField, dateValue);
         }
-        JSONObject object = new JSONObject();
         return object.toJSONString();
     }
 
