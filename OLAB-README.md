@@ -23,38 +23,38 @@ IKAnalyzer-5.0
 
 >函数：可以用在cypher中任何可以使用方法的地方如where子句，return子句中。如match (n) wehre com.xxx.xx(n) return n。
 
-### 1、计算IDS中ID的个数
+### 计算IDS中ID的个数
 ```cql
 RETURN olab.getEventIdsSize("123123,123123,2131,12321,23424,123123,2331") as value
 match p=(n:LABEL1)<-[r:REL]-(m:LABEL2) where n.name='新闻_1432' and r.eventTargetIds IS NOT NULL return p ORDER BY olab.getEventIdsSize(r.eventTargetIds) DESC limit 10
 ```
 
-### 2、列表数字降序排列
+### 列表数字降序排列
 ```cql
 RETURN olab.sortDESC([4,3,5,1,6,8,7]) as descList
 ```
 
-### 3、打印HELLO WORLD
+### 打印HELLO WORLD
 ```cql
 RETURN olab.hello("world") as greeting
 ```
 
-### 4、创建测试节点
+### 创建测试节点
 ```cql
 CALL olab.createCustomer('Test') YIELD node RETURN node
 ```
 
-### 5、离差标准化函数
+### 离差标准化函数
 ```cql
 olab.scorePercentage
 ```
 
-### 6、移动小数点
+### 移动小数点
 ```cql
 olab.moveDecimalPoint
 ```
 
-### 7、中文分词 *-true 智能分词，false 细粒度分词
+### 中文分词 *-true 智能分词，false 细粒度分词
 ```cql
 RETURN olab.index.iKAnalyzer('复联终章快上映了好激动，据说知识图谱与人工智能技术应用到了那部电影！吖啶基氨基甲烷磺酰甲氧基苯胺是一种药嘛？',true) AS words
 ```
@@ -75,7 +75,7 @@ UNWIND wordR AS row3
 MATCH p=(n)-[*..2]-(f)-[*..2]-(m) WHERE n.name CONTAINS row1 AND m.name CONTAINS row2 AND f.name CONTAINS row3 RETURN p LIMIT 100
 ```
 
-### 8、创建中文全文索引（不同标签使用相同的索引名即可支持跨标签类型检索）
+### 创建中文全文索引（不同标签使用相同的索引名即可支持跨标签类型检索）
 ```cql
 CALL olab.index.addChineseFulltextIndex('IKAnalyzer', ['description'], 'Loc') YIELD message RETURN message
 CALL olab.index.addChineseFulltextIndex('IKAnalyzer',['description','year'], 'Loc') YIELD message RETURN message
@@ -83,7 +83,7 @@ CALL olab.index.addChineseFulltextIndex('IKAnalyzer', ['description','year'],'Lo
 
 ```
 
-### 9、中文全文索引查询（可跨标签类型检索）- *-1表示数据量不做限制返回全部 *-lucene查询示例 
+### 中文全文索引查询（可跨标签类型检索）- *-1表示数据量不做限制返回全部 *-lucene查询示例 
 ```cql
 CALL olab.index.chineseFulltextIndexSearch('IKAnalyzer', 'description:吖啶基氨基甲烷磺酰甲氧基苯胺', 100) YIELD node RETURN node
 CALL olab.index.chineseFulltextIndexSearch('IKAnalyzer', 'description:吖啶基氨基甲烷磺酰甲氧基苯胺', 100) YIELD node,weight RETURN node,weight
@@ -97,12 +97,12 @@ CALL olab.index.chineseFulltextIndexSearch('IKAnalyzer', '+(name:东方网) AND 
 
 ```
 
-### 10、为节点添加索引
+### 为节点添加索引
 ```cql
 MATCH (n) WHERE n.name='A' WITH n CALL olab.index.addNodeChineseFulltextIndex(n, ['description']) RETURN *
 ```
 
-### 11、生成JSON-从CYPHER直接生成JSON【支持节点转换/属性转换/路径转换】
+### 生成JSON-从CYPHER直接生成JSON【支持节点转换/属性转换/路径转换】
 ```cql
 match (n) return olab.convert.json(n) limit 10
 match p=(n)-[]-() return olab.convert.json(p) limit 1
@@ -110,7 +110,7 @@ match (n) return olab.convert.json(properties(n)) limit 10
 RETURN apoc.convert.fromJsonList(olab.convert.json(['21','123',123]))
 ```
 
-### 12、更多过程与函数请参考源码和测试...
+### 更多过程与函数请参考源码和测试...
 
 ## IKAnalyzer分词
 
@@ -128,7 +128,7 @@ smart模式的下分词结果为：
      张三 | 三 | 说的 | 的确 | 的 | 确实 | 实在 | 在理
 ```
 
-### 13、生成文本指纹
+### 生成文本指纹
 ```cql
 RETURN olab.simhash('公司系经长春经济体制改革委员会长体改(1993)165号文批准') AS simHash
 ╒══════════════════════════════════════════════════════════════════╕
@@ -138,7 +138,7 @@ RETURN olab.simhash('公司系经长春经济体制改革委员会长体改(1993
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### 14、计算两个节点simhash相似度
+### 计算两个节点simhash相似度
 >返回值只返回本次新建的关系，每次操作都有返回值，无新建则返回空
 - 创建三个两两之间简介相似的组织机构节点
 ```cql
@@ -172,7 +172,7 @@ CALL olab.simhash.build.rel.cross(n,m,['brief_intro_cn','brief_intro_en'],['brie
 ```cql
 CALL apoc.periodic.iterate("MATCH (n:组织机构:中文名称),(m:组织机构:中文名称) WHERE n<>m AND NOT ((n)-[:相似简介]-(m)) RETURN n,m", "WITH {n} AS n,{m} AS m CALL olab.simhash.build.rel(n,m,'simhash','simhash','相似简介',3,false) YIELD pathJ RETURN pathJ", {parallel:true,batchSize:10000}) YIELD  batches,total,timeTaken,committedOperations,failedOperations,failedBatches,retries,errorMessages,batch,operations RETURN batches,total,timeTaken,committedOperations,failedOperations,failedBatches,retries,errorMessages,batch,operations
 ```
-### 15、计算两个节点编辑距离相似度
+### 计算两个节点编辑距离相似度
 >返回值只返回本次新建的关系，每次操作都有返回值，无新建则返回空
 >阈值参考：英文0.9，中文0.8
 - 【英文计算结果较好】计算两个节点的编辑距离相似度，相似则建立’相似名称‘关系
@@ -216,7 +216,7 @@ CALL apoc.periodic.iterate("MATCH (n:组织机构:中文名称),(m:组织机构:
 ```
 CALL olab.editDistance.build.rel.cross.encn.multirel(n,m,['关联别名','英文名称'],'name','editDis','editDis','相似名称',0.9,0.8,true) YIELD pathJ RETURN pathJ
 ```
-## 16、根据关系模式计算两个节点相似度
+## 根据关系模式计算两个节点相似度
 ```
 MATCH (n:`组织机构`:`中文名称`) WITH n SKIP 0 LIMIT 100
 MATCH (m:`组织机构`:`中文名称`) WHERE n<>m WITH n,m
@@ -227,7 +227,7 @@ CALL olab.similarity.collision(n,m,collectList,{关联人:3,关联网址:3,关�
 RETURN startNode.name,endNode.name,similarity ORDER BY similarity DESC LIMIT 100
 ```
 
-## 17、根据关系模式相似度聚类节点
+## 根据关系模式相似度聚类节点
 - 建索引
 ```
 CREATE INDEX ON :PREClusterHeart公司(cluster_id);
@@ -252,47 +252,47 @@ RETURN clusterId AS master,COUNT(m) AS slaveCount,COLLECT(id(m)+'-'+m.name) AS s
 CALL apoc.periodic.submit('writeOrgClusterTask','CALL olab.cluster.collision([\'组织机构\',\'中文名称\'],{关联人:3,关联网址:3,关联城市:1},\'PREClusterHeart公司\',2,\'cluster_id\')')
 CALL apoc.periodic.list()
 ```
-## 18、增加HTTP调用函数-支持API绝对地址
+## 增加HTTP调用函数-支持API绝对地址
 ```
 RETURN olab.http.post('api-address','input')
 RETURN olab.http.get('api-address')
 RETURN olab.http.put('api-address','input')
 RETURN olab.http.delete('api-address','input')
 ```
-## 19、用正则串过滤字段值 ， 并返回过滤之后的VALUE ； 保留空格
+## 用正则串过滤字段值 ， 并返回过滤之后的VALUE ； 保留空格
 ```
 RETURN REPLACE(olab.replace.regexp('"TMC Rus" Limited Liability Company','[`~!@#$%^&*()+=|{}\':;\',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。 ，、？"-]')," ","")
 RETURN olab.replace.regexp('2020年07月23号','[A-Za-z_\u4e00-\u9fa5]+')
 ```
-## 20、对存列表的属性字段进行排重【字段存储JSON列表对象】【返回排重后的数据】
+## 对存列表的属性字段进行排重【字段存储JSON列表对象】【返回排重后的数据】
 ```
 WITH '[{"investType":"-1","amount":102,"updateDate":20011019121208,},{"investType":"-1","amount":-1,"updateDate":20041014104446,},{"investType":"-1","amount":-1,"updateDate":20011019170043,}]' AS jsonString
 WITH ['investType','amount'] AS keyFields,jsonString
 WITH olab.remove.duplicate(jsonString,keyFields) AS value 
 RETURN apoc.convert.fromJsonList(value) AS jsonValue
 ```
-## 21、分析输入节点PATH按照关系层级分类节点【输入一个完整的计算逻辑图】【输出层级执行顺序LIST】
+## 分析输入节点PATH按照关系层级分类节点【输入一个完整的计算逻辑图】【输出层级执行顺序LIST】
 ```
 # RETURN olab.parse.path(path,)
 ```
-## 22、分析输入节点PATH按照关系层级分类节点【输入一个完整的计算逻辑图】【输出层级执行顺序LIST】
+## 分析输入节点PATH按照关系层级分类节点【输入一个完整的计算逻辑图】【输出层级执行顺序LIST】
 ```
 # RETURN olab.operator.sort()
 ```
-## 23、解析JSONArray ， 通过传入字段排序array ， 并返回前N个结果
+## 解析JSONArray ， 通过传入字段排序array ， 并返回前N个结果
 ```
 RETURN olab.sort.jsonArray({jsonString},{sortField},{sort},{returnSize}) AS value
 ```
-## 24、解析JSONArray, 进行采样
+## 解析JSONArray, 进行采样
 ```
 RETURN olab.sampling.jsonArray({jsonString},{samplingType},{samplingSize}) AS value
 ```
-## 25、解析JSONArray, 进行采样 ： 从列表中选举距离当前时间最近的对象
+## 解析JSONArray, 进行采样 ： 从列表中选举距离当前时间最近的对象
 ```
 apoc.convert.fromJsonMap()
 RETURN olab.samplingByDate.jsonArray({jsonString},{dateValue},{dateField}) AS value
 ```
-## 26、字符串处理
+## 字符串处理
 ```
 #提取英文中文
 RETURN olab.string.matchCnEn('國際生打撒3.$#%@#$GuangDong Rongjun Co') AS value;
@@ -307,18 +307,18 @@ RETURN olab.string.encode('國際生打撒3.$#%@#$GuangDong Rongjun Co') AS valu
 #【先提取中文英文】默认编码为中文
 RETURN olab.string.encodeEncCnc('國際生打撒3.$#%@#$GuangDong Rongjun Co') AS value;
 ```
-## 27、集合转换【CSV格式转为mapList】【数据封装格式转换】
+## 集合转换【CSV格式转为mapList】【数据封装格式转换】
 ```
 RETURN olab.structure.mergeToListMap(['area_code','author'],[['001','HORG001'],['002','HORG002']])
 ```
 
-## 28、【CSV格式转为mapList】【数据封装格式转换】
+## 【CSV格式转为mapList】【数据封装格式转换】
 ```
 RETURN olab.structure.mergeToListMap({fields},{items}) AS value
 RETURN olab.structure.mergeToListMap(['area_code','author'],[['001','HORG001'],['002','HORG002']])
 ```
 
-## 29、标准化时间字段【可选是否对无效时间对象是否去噪】【保留14位LONG类型数字】
+## 标准化时间字段【可选是否对无效时间对象是否去噪】【保留14位LONG类型数字】
 ```
 RETURN olab.standardize.date({object},{isStdDate},{selection}) AS value
 RETURN olab.standardize.date(202011,true,NULL);
@@ -328,9 +328,43 @@ RETURN olab.standardize.date('2020-11-26T08:47:38',true,NULL);
 RETURN olab.standardize.date([20201201,-1,201912,2020,"dasd"],TRUE,'ASC')
 ```
 
-## 30、重置MAP - 移除传入的KEY
+## 重置MAP - 移除传入的KEY
 ```
 RETURN olab.reset.map({map},{keys}) AS value
 RETURN olab.reset.map({total: 1,committed: 1,failed: 0},['total','failed'])
 ```
+
+## 解析JSONArray从列表中选举距离当前时间最近的对象【选举之前增加其他过滤条件】
+```
+RETURN olab.samplingByDate.filter.jsonArray({jsonString},{dateValue},{dateField},{filterMap}) AS value
+```
+```
+filterMap的设置方式：
+MAP中KEY为字段名，VALUE为过滤条件
+数值类型支持的过滤方式：
+/**
+ * 搜索大于某值的字段，不包含该值本身
+ **/
+GT("gt", ">"),
+/**
+ * 搜索大于某值的字段，包含该值本身
+ **/
+GTE("gte", ">="),
+/**
+ * 搜索小于某值的字段，不包含该值本身
+ **/
+LT("lt", "<"),
+/**
+ * 搜索小于某值的字段，包含该值本身
+ **/
+LTE("lte", "<=");
+字符串类型支持的过滤方式，目前只支持全等【过滤字符时‘condition’填写以上枚举条件不包含的值即可】
+# 过滤ratio大于-1的值
+{ratio:{value:-1,condition":">"}}
+# 过滤ratio大于-1，并且src等于‘caihui2’，并且amount大于等于10000000
+{ratio:{value:-1,condition":">"},src:{value:"caihui2",condition":"STR"},amount:{value:10000000,condition":">="}}
+MATCH p=(n:HORGShareHold)-[r]->() WHERE apoc.convert.fromJsonMap(olab.samplingByDate.filter.jsonArray(r.shareholding_detail,'releaseDate',20200415000000,{ratio:{value:-1,condition:">"},src:{value:"caihui2",condition:"STR"},amount:{value:10000000,condition:">="}})).ratio > 0
+RETURN r.shareholding_detail LIMIT 1
+```
+
 
