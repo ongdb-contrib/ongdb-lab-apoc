@@ -103,6 +103,11 @@ public class DateUtilTest {
         System.out.println(DateUtil.standardizeDate(objectList, false, "SEQUENCE"));
         System.out.println(DateUtil.standardizeDate(objectList, false, "sequence"));
     }
+
+    @Test
+    public void test06() {
+        System.out.println(DateUtil.standardizeDate(Arrays.asList("2020-11-26 08:47:38","2020-11-26"), true, "SEQUENCE"));
+    }
 }
 
 
