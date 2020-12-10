@@ -367,4 +367,23 @@ MATCH p=(n:HORGShareHold)-[r]->() WHERE apoc.convert.fromJsonMap(olab.samplingBy
 RETURN r.shareholding_detail LIMIT 1
 ```
 
+## 指定最大ID和最小ID，生成一个IDS列表
+- [1,2,3,4,5]
+```
+RETURN olab.ids({min},{max}) AS value
+```
+
+## 指定最大ID和最小ID，生成N个指定SIZE的列表
+- 3等份[[1,2],[3,4],[5]]
+```
+apoc.coll.partition
+RETURN olab.ids.split({min},{max},{batch}) AS value
+```
+
+## 指定最大ID和最小ID，生成N个指定SIZE的列表
+- 2等份[[1,2,3],[4,5]]
+- 2等份只拿最大最小返回[[1,3],[4,5]]
+```
+RETURN olab.ids.batch({min},{max},{batch}) AS value
+```
 
