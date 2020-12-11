@@ -370,11 +370,14 @@ RETURN r.shareholding_detail LIMIT 1
 ## 指定最小ID和最大ID，生成N个指定SIZE的列表【每个列表只拿最大最小ID】
 ```
 RETURN olab.ids.batch({min},{max},{batch}) AS value
+WITH olab.ids.batch(1,10000000000,50000000) AS value
+UNWIND value AS list
+RETURN list[0] AS min,list[1] AS max
 ```
 
-## 重置MAP - 新增传入KEY和VALUE
+## 重置MAP - 为map新增传入KEY和VALUE
 ```
 RETURN olab.add.map({map},{key:value,key2:value}) AS value
-RETURN olab.add.map({total: 1,committed: 1,failed: 0},{key:1,key2:200}})
+RETURN olab.add.map({total: 1,committed: 1,failed: 0},{key:1,key2:200})
 ```
 
