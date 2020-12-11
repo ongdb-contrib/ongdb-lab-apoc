@@ -8,6 +8,7 @@ import org.neo4j.harness.junit.Neo4jRule;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -30,13 +31,26 @@ public class FunctionPartitionTest {
     @Test
     public void structureMergeToListMap() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
-
         Map<String, Object> hashMap = new HashMap<>();
-        hashMap.put("fields", Arrays.asList("area_code","author",123));
-        hashMap.put("items",Arrays.asList(Arrays.asList("001","HORG001",234),Arrays.asList("002","HORG002",344)));
+        hashMap.put("fields", Arrays.asList("area_code", "author", 123));
+        hashMap.put("items", Arrays.asList(Arrays.asList("001", "HORG001", 234), Arrays.asList("002", "HORG002", 344)));
 
         Result result = db.execute("RETURN olab.structure.mergeToListMap({fields},{items}) AS value", hashMap);
         String string = (String) result.next().get("value");
         System.out.println(string);
     }
+
+    @Test
+    public void idsBatch() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("min", 1);
+        hashMap.put("max", 1000000000);
+        hashMap.put("batch", 500_0000);
+
+        Result result = db.execute("RETURN olab.ids.batch({min},{max},{batch}) AS value", hashMap);
+        List<List<Long>> ids = (List<List<Long>>) result.next().get("value");
+        System.out.println(ids);
+    }
 }
+

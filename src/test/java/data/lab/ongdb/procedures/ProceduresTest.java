@@ -862,5 +862,26 @@ public class ProceduresTest {
         // RETURN olab.reset.map({total: 1,committed: 1,failed: 0},['total','failed'])
         System.out.println(map.size());
     }
+
+    @Test
+    public void resetMap02() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> keys = new HashMap<>();
+        keys.put("testKey", 21);
+        keys.put("threeKey", "testTony3");
+
+        Map<String, Object> keys2 = new HashMap<>();
+        keys2.put("key", 21);
+        keys2.put("key2", "testTony");
+
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("map", keys);
+        hashMap.put("keyValues", keys2);
+
+        Result result = db.execute("RETURN olab.add.map({map},{keyValues}) AS value", hashMap);
+        Map<String, Object> map = (Map<String, Object>) result.next().get("value");
+        // RETURN olab.add.map({total: 1,committed: 1,failed: 0},{key2:'testTony',key:21})
+        System.out.println(JSONObject.parseObject(JSON.toJSONString(map)));
+    }
 }
 

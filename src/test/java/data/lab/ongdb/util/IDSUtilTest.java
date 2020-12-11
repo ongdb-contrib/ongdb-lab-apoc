@@ -20,20 +20,39 @@ public class IDSUtilTest {
 
     @Test
     public void ids() {
-        IDSUtil.ids(1, 10).forEach(System.out::println);
+        IDSUtil.ids(1, 100).forEach(System.out::println);
+    }
+
+    @Test
+    public void idsSize() {
+        IDSUtil.ids(1, 100, 25).forEach(System.out::println);
     }
 
     @Test
     public void idsSplit() {
         // 指定最大ID和最小ID ， 生成N个指定SIZE的列表
-        IDSUtil.idsSplit(1, 10, 2)
+        IDSUtil.idsSplit(1, 100, 25)
                 .forEach(v -> System.out.println(JSONArray.parseArray(JSON.toJSONString(v))));
     }
 
     @Test
     public void idsBatch() {
         // 指定最大ID和最小ID ， 生成N个指定SIZE的列表 - 只拿最大最小返回
-        IDSUtil.idsBatch(1, 1_000_000_000, 5_000_000)
+        IDSUtil.idsBatch(1, 100, 25)
+                .forEach(v -> System.out.println(JSONArray.parseArray(JSON.toJSONString(v))));
+    }
+
+    @Test
+    public void idsBatchOptimize() {
+        // 指定最大ID和最小ID ， 生成N个指定SIZE的列表 - 只拿最大最小返回
+        IDSUtil.idsBatchOptimize(1, 100, 25)
+                .forEach(v -> System.out.println(JSONArray.parseArray(JSON.toJSONString(v))));
+    }
+
+    @Test
+    public void idsBatchOptimizeTest01() {
+        // 指定最大ID和最小ID ， 生成N个指定SIZE的列表 - 只拿最大最小返回
+        IDSUtil.idsBatchOptimize(1, 1000000000, 5000000)
                 .forEach(v -> System.out.println(JSONArray.parseArray(JSON.toJSONString(v))));
     }
 }

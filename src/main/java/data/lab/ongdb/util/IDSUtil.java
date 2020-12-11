@@ -36,6 +36,24 @@ public class IDSUtil {
     /**
      * @param
      * @return
+     * @Description: TODO(指定最大ID和最小ID ， 生成一个IDS列表)
+     */
+    public static List<Long> ids(long min, long max, int batchSize) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(min);
+        for (long i = min; i < max; i++) {
+            i += batchSize - 1;
+            if (i < max) {
+                ids.add(i);
+            }
+        }
+        ids.add(max);
+        return ids;
+    }
+
+    /**
+     * @param
+     * @return
      * @Description: TODO(指定最大ID和最小ID ， 生成N个指定SIZE的列表)
      */
     public static Stream<List<Long>> idsSplit(long min, long max, int batchSize) {
@@ -52,7 +70,7 @@ public class IDSUtil {
     /**
      * @param
      * @return
-     * @Description: TODO(指定最大ID和最小ID ， 生成指定SIZE的列表 - 只拿最大最小返回)
+     * @Description: TODO(指定最大ID和最小ID ， 生成指定SIZE的列表 - 只拿最大最小返回)【使用时左闭右闭规则】
      */
     public static Stream<List<Long>> idsBatch(long min, long max, int batchSize) {
         List<Long> ids = ids(min, max);
@@ -67,5 +85,27 @@ public class IDSUtil {
                             .distinct().collect(Collectors.toList());
                 });
     }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(指定最大ID和最小ID ， 生成指定SIZE的列表 - 只拿最大最小返回)【使用时左闭右闭规则】
+     */
+    public static Stream<List<Long>> idsBatchOptimize(long min, long max, int batchSize) {
+        List<Long> ids = ids(min, max, batchSize);
+        int pages = ids.size() - 1;
+        return IntStream.range(0, pages).parallel().boxed()
+                .map(page -> Arrays.asList(ids.get(page), ids.get(page + 1)));
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(指定最大ID和最小ID ， 生成指定SIZE的列表 - 只拿最大最小返回)【使用时左闭右闭规则】
+     */
+    public static List<List<Long>> idsBatchOptimizeList(long min, long max, int batchSize) {
+        return idsBatchOptimize(min, max, batchSize).collect(Collectors.toList());
+    }
 }
+
 

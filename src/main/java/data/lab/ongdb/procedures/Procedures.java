@@ -197,6 +197,21 @@ public class Procedures {
     }
 
     /**
+     * @param map:MAP对象
+     * @param keyValues:新增传入的keyValues
+     * @return
+     * @Description: TODO(重置MAP - 新增传入KEY和VALUE)
+     */
+    @UserFunction(name = "olab.add.map")
+    @Description("重置MAP-移除传入的KEY")
+    public Map<String, Object> addMap(@Name("map") Map<String, Object> map, @Name("keyValues") Map<String, Object> keyValues) {
+        if (keyValues != null && !keyValues.isEmpty()) {
+            map.putAll(keyValues);
+        }
+        return map;
+    }
+
+    /**
      * @param
      * @return
      * @Description: TODO(对字符进行编码 - 【 先提取中文英文 】 默认编码为中文)

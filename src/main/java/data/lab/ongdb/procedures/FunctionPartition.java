@@ -7,6 +7,7 @@ package data.lab.ongdb.procedures;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import data.lab.ongdb.util.IDSUtil;
 import org.neo4j.procedure.Description;
 import org.neo4j.procedure.Name;
 import org.neo4j.procedure.UserFunction;
@@ -42,6 +43,19 @@ public class FunctionPartition {
             mapList.add(map);
         }
         return JSONArray.parseArray(JSON.toJSONString(mapList)).toJSONString();
+    }
+
+    /**
+     * @param min:最小ID
+     * @param max:最大ID
+     * @param batch:每个batch的大小
+     * @return
+     * @Description: TODO(指定最小ID和最大ID，生成N个指定SIZE的列表【每个列表只拿最大最小ID】)
+     */
+    @UserFunction(name = "olab.ids.batch")
+    @Description("指定最小ID和最大ID，生成N个指定SIZE的列表【每个列表只拿最大最小ID】")
+    public List<List<Long>> idsBatch(@Name("min") Long min, @Name("max") Long max, @Name("batch") Number batch) {
+        return IDSUtil.idsBatchOptimizeList(min, max, batch.intValue());
     }
 }
 
