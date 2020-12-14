@@ -60,8 +60,9 @@ public class FunctionPartition {
 
     /**
      * @param string:原始字符串
-     * @param replaceListMap:需要替换的字符串[{raw:'{url}',rep:'\'test-url\''},{raw:'{sql}',rep:'\''+loadSql+'\'',escape:TRUE}] raw:需要被替换的参数
-     *                                                                                                                  rep:替换值
+     * @param replaceListMap:需要替换的字符串[{raw:'{url}',rep:'\'test-url\''},{raw:'{sql}',rep:'\''+loadSql+'\''}]
+     *                      raw:需要被替换的参数
+     *                      rep:替换值
      * @return
      * @Description: TODO(字符串替换 - 按照传入的map替换)
      */
