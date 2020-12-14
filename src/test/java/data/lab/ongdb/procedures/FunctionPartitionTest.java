@@ -6,10 +6,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
 import org.neo4j.harness.junit.Neo4jRule;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
  *
@@ -51,6 +48,69 @@ public class FunctionPartitionTest {
         Result result = db.execute("RETURN olab.ids.batch({min},{max},{batch}) AS value", hashMap);
         List<List<Long>> ids = (List<List<Long>>) result.next().get("value");
         System.out.println(ids);
+    }
+
+    @Test
+    public void olabRepalceTest() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        List<Map<String, Object>> replaceListMap = new ArrayList<>();
+        Map<String, Object> reMap1 = new HashMap<>();
+        reMap1.put("raw","{url}");
+        reMap1.put("rep","'test-url'");
+        Map<String, Object> reMap2 = new HashMap<>();
+        reMap2.put("raw","{sql}");
+        reMap2.put("rep","'test-sql'");
+        replaceListMap.add(reMap1);
+        replaceListMap.add(reMap2);
+
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("string", "RETURN {url} AS url,{sql} AS sql");
+        hashMap.put("replaceListMap", replaceListMap);
+
+        Result result = db.execute("RETURN olab.replace({string},{replaceListMap}) AS value", hashMap);
+        String string = (String) result.next().get("value");
+        System.out.println(string);
+    }
+
+    @Test
+    public void olabRepalceTest02() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        List<Map<String, Object>> replaceListMap = new ArrayList<>();
+        Map<String, Object> reMap1 = new HashMap<>();
+        reMap1.put("raw","{url}");
+        reMap1.put("rep","'test-url'");
+        Map<String, Object> reMap2 = new HashMap<>();
+        reMap2.put("raw","{sql}");
+        reMap2.put("rep","'SELECT parent_pcode AS `name`,CONVERT(DATE_FORMAT(hupdatetime,\\'%Y%m%d%H%i%S\\'),UNSIGNED INTEGER) AS hupdatetime FROM MSTR_ORG_PRE'");
+        reMap2.put("escape",true);
+        replaceListMap.add(reMap1);
+        replaceListMap.add(reMap2);
+
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("string", "RETURN {url} AS url,{sql} AS sql");
+        hashMap.put("replaceListMap", replaceListMap);
+
+        Result result = db.execute("RETURN olab.replace({string},{replaceListMap}) AS value", hashMap);
+        String string = (String) result.next().get("value");
+        System.out.println(string);
+    }
+
+    @Test
+    public void escape() {
+        String str = "CONVERT(DATE_FORMAT(hupdatetime,'%Y%m%d%H%i%S'),UNSIGNED INTEGER)";
+        System.out.println(str.replace("'","\\'"));
+    }
+
+    @Test
+    public void escapeTest01() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+//        hashMap.put("string", "CONVERT(DATE_FORMAT(hupdatetime,\'%Y%m%d%H%i%S\'),UNSIGNED INTEGER)");
+//        hashMap.put("string", "");
+        hashMap.put("string", null);
+        Result result = db.execute("RETURN olab.escape({string}) AS value", hashMap);
+        String string = (String) result.next().get("value");
+        System.out.println(string);
     }
 }
 

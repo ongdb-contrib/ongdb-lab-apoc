@@ -381,3 +381,22 @@ RETURN olab.add.map({map},{key:value,key2:value}) AS value
 RETURN olab.add.map({total: 1,committed: 1,failed: 0},{key:1,key2:200})
 ```
 
+## 字符串替换 - 按照传入的map替换
+```
+RETURN olab.repalce({string},{replaceListMap})
+RETURN olab.replace('RETURN {url} AS url,{sql} AS sql',[{raw:'{url}',rep:'\'test-url\''},{raw:'{sql}',rep:'\'test-sql\''}])
+```
+```
+WITH 'test-url' AS url
+RETURN olab.replace('RETURN {url} AS url,{sql} AS sql',[{raw:'{url}',rep:'\'`'+url+'`\''},{raw:'{sql}',rep:'\'test-sql\''}])
+```
+```
+WITH 'test-url' AS url
+RETURN olab.replace('RETURN {url} AS url,{sql} AS sql',[{raw:'{url}',rep:'\'\''+url+'\'\''},{raw:'{sql}',rep:'\'test-sql\''}])
+```
+
+## 对传入的字符串执行’\’‘转义操作
+```
+WITH 'SELECT parent_pcode AS `name`,CONVERT(DATE_FORMAT(hupdatetime,\'%Y%m%d%H%i%S\'),UNSIGNED INTEGER) AS hupdatetime FROM MSTR_ORG_PRE' AS loadSql
+RETURN olab.escape(loadSql)
+```

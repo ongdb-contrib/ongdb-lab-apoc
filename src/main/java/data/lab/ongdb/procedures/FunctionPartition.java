@@ -50,13 +50,47 @@ public class FunctionPartition {
      * @param max:最大ID
      * @param batch:每个batch的大小
      * @return
-     * @Description: TODO(指定最小ID和最大ID，生成N个指定SIZE的列表【每个列表只拿最大最小ID】)
+     * @Description: TODO(指定最小ID和最大ID ， 生成N个指定SIZE的列表 【 每个列表只拿最大最小ID 】)
      */
     @UserFunction(name = "olab.ids.batch")
     @Description("指定最小ID和最大ID，生成N个指定SIZE的列表【每个列表只拿最大最小ID】")
     public List<List<Long>> idsBatch(@Name("min") Long min, @Name("max") Long max, @Name("batch") Number batch) {
         return IDSUtil.idsBatchOptimizeList(min, max, batch.intValue());
     }
+
+    /**
+     * @param string:原始字符串
+     * @param replaceListMap:需要替换的字符串[{raw:'{url}',rep:'\'test-url\''},{raw:'{sql}',rep:'\''+loadSql+'\'',escape:TRUE}] raw:需要被替换的参数
+     *                                                                                                                  rep:替换值
+     * @return
+     * @Description: TODO(字符串替换 - 按照传入的map替换)
+     */
+    @UserFunction(name = "olab.replace")
+    @Description("字符串替换 - 按照传入的map替换")
+    public String replaceString(@Name("string") String string, @Name("replaceListMap") List<Map<String, Object>> replaceListMap) {
+        for (Map<String, Object> map : replaceListMap) {
+            if (!map.containsKey("raw") || !map.containsKey("rep")) {
+                return "Missing necessary fields ’raw‘ or ’rep‘!";
+            } else {
+                Object raw = map.get("raw");
+                Object rep = map.get("rep");
+                string = string.replace(String.valueOf(raw), String.valueOf(rep));
+            }
+        }
+        return string;
+    }
+
+    /**
+     * @param string:原始字符串
+     * @return
+     * @Description: TODO(对传入的字符串执行 ’ \ ’ ‘ 转义操作)
+     */
+    @UserFunction(name = "olab.escape")
+    @Description("对传入的字符串执行’\\’‘转义操作")
+    public String escape(@Name("string") String string) {
+        return string != null ? string.replace("'", "\\'") : string;
+    }
 }
+
 
 
