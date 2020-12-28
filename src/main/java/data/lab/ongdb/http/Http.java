@@ -18,8 +18,6 @@ import org.neo4j.procedure.UserFunction;
  */
 public class Http {
 
-    private static final HttpRequest REQUEST = new HttpRequest();
-
     /**
      * @param
      * @return
@@ -28,7 +26,7 @@ public class Http {
     @UserFunction(name = "olab.http.post")
     @Description("RETURN olab.http.post('api-address','input')")
     public String post(@Name("api") String api, @Name("para") String para) {
-        return REQUEST.httpPost(api, para);
+        return new HttpRequest().httpPost(api, para);
     }
 
     /**
@@ -39,7 +37,7 @@ public class Http {
     @UserFunction(name = "olab.http.get")
     @Description("RETURN olab.http.get('api-address')")
     public String get(@Name("api") String api) {
-        return REQUEST.httpGet(api);
+        return new HttpRequest().httpGet(api);
     }
 
     /**
@@ -50,7 +48,7 @@ public class Http {
     @UserFunction(name = "olab.http.put")
     @Description("RETURN olab.http.put('api-address','input')")
     public String put(@Name("api") String api, @Name("para") String para) {
-        return REQUEST.httpPut(api, para);
+        return new HttpRequest().httpPut(api, para);
     }
 
     /**
@@ -61,7 +59,7 @@ public class Http {
     @UserFunction(name = "olab.http.delete")
     @Description("RETURN olab.http.delete('api-address','input')")
     public String delete(@Name("api") String api, @Name("para") String para) {
-        return REQUEST.postDeleteRequest(api, para);
+        return new HttpRequest().postDeleteRequest(api, para);
     }
 }
 
