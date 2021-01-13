@@ -817,7 +817,7 @@ public class Procedures {
      * @param dateValue:20201020235959
      * @param dateField:日期字段
      * @return
-     * @Description: TODO(解析JSONArray ， 从列表中选举距离当前时间最近的对象)
+     * @Description: TODO(解析JSONArray ， 从列表中选举距离当前时间最近的对象 - 小于指定时间)
      */
     @UserFunction(name = "olab.samplingByDate.jsonArray")
     @Description("RETURN olab.samplingByDate.jsonArray(rawJson)")
@@ -861,7 +861,7 @@ public class Procedures {
      * @param dateField:日期字段
      * @param filterMap:过滤条件
      * @return
-     * @Description: TODO(解析JSONArray ， 从列表中选举距离当前时间最近的对象)
+     * @Description: TODO(解析JSONArray ， 从列表中选举距离当前时间最近的对象 - 【小于指定时间找最近】)
      */
     @UserFunction(name = "olab.samplingByDate.filter.jsonArray")
     @Description("RETURN olab.samplingByDate.filter.jsonArray(rawJson)")
@@ -986,6 +986,70 @@ public class Procedures {
             }
         }
         return object;
+    }
+
+    /**
+     * @param jsonString:JSON-STRING
+     * @param dateValue:20201020235959
+     * @param dateField:日期字段
+     * @return
+     * @Description: TODO(解析JSONArray ， 从列表中选举距离当前时间最近的对象 - 距离指定时间最近 【 有可能大于指定时间 】)
+     */
+    @UserFunction(name = "olab.samplingByDate.dis.jsonArray")
+    @Description("RETURN olab.samplingByDate.dis.jsonArray(rawJson)")
+    public String samplingByDateDisJsonArray(@Name("jsonString") String jsonString, @Name("dateField") String dateField, @Name("dateValue") Long dateValue) {
+        if (jsonString != null && !"".equals(jsonString)) {
+            /**
+             * 获取所有时间列表
+             * 计算时间列表的之差并获取差值最小的时间
+             * **/
+            Optional<Long[]> selctionDate = JSONArray.parseArray(jsonString).stream().map(v -> {
+                JSONObject object = (JSONObject) v;
+                return object.getLong(dateField);
+            })
+                    .map(v -> new Long[]{v, Math.abs(dateValue - v)})
+                    .sorted(Comparator.comparing(v -> v[1]))
+                    .findFirst();
+            if (selctionDate.isPresent()){
+                return samplingByDateJsonArray(jsonString,dateField,selctionDate.get()[0]);
+            }
+        }
+        JSONObject object = new JSONObject();
+        return object.toJSONString();
+    }
+
+    /**
+     * @param jsonString:JSON-STRING
+     * @param dateValue:20201020235959
+     * @param dateField:日期字段
+     * @param filterMap:过滤条件
+     * @return
+     * @Description: TODO(解析JSONArray ， 从列表中选举距离当前时间最近的对象 - 距离指定时间最近 【 有可能大于指定时间 】)
+     */
+    @UserFunction(name = "olab.samplingByDate.dis.filter.jsonArray")
+    @Description("RETURN olab.samplingByDate.dis.filter.jsonArray(rawJson)")
+    public String samplingByDateDisJsonArray(@Name("jsonString") String jsonString, @Name("dateField") String dateField, @Name("dateValue") Long dateValue, @Name("filterMap") Map<String, Object> filterMap) {
+        JSONObject object = new JSONObject();
+        if (jsonString != null && !"".equals(jsonString)) {
+            JSONArray rawJson = JSONArray.parseArray(jsonString);
+            /**
+             * 增加过滤规则
+             * **/
+            JSONArray filterArray = rawJson.stream()
+                    .filter(v -> {
+                        if (v instanceof JSONObject) {
+                            return isFilterMap((JSONObject) v, filterMap);
+                        } else {
+                            return true;
+                        }
+                    })
+                    .collect(Collectors.toCollection(JSONArray::new));
+            if (filterArray.isEmpty()) {
+                filterArray.add(randomMap(rawJson));
+            }
+            return samplingByDateDisJsonArray(filterArray.toJSONString(), dateField, dateValue);
+        }
+        return object.toJSONString();
     }
 }
 

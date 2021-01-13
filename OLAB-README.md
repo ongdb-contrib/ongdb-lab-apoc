@@ -290,7 +290,10 @@ RETURN olab.sampling.jsonArray({jsonString},{samplingType},{samplingSize}) AS va
 ## 解析JSONArray, 进行采样 ： 从列表中选举距离当前时间最近的对象
 ```
 apoc.convert.fromJsonMap()
+# 【小于指定时间找最近】
 RETURN olab.samplingByDate.jsonArray({jsonString},{dateValue},{dateField}) AS value
+# 【基于时间距离长度找最近时间】
+RETURN olab.samplingByDate.dis.jsonArray({jsonString},{dateValue},{dateField}) AS value
 ```
 ## 字符串处理
 ```
@@ -336,7 +339,10 @@ RETURN olab.reset.map({total: 1,committed: 1,failed: 0},['total','failed'])
 
 ## 解析JSONArray从列表中选举距离当前时间最近的对象【选举之前增加其他过滤条件】
 ```
+# 【小于指定时间找最近】
 RETURN olab.samplingByDate.filter.jsonArray({jsonString},{dateValue},{dateField},{filterMap}) AS value
+# 【基于时间距离长度找最近时间】
+RETURN olab.samplingByDate.dis.filter.jsonArray({jsonString},{dateValue},{dateField},{filterMap}) AS value
 ```
 ```
 filterMap的设置方式：
