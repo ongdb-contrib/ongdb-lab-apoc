@@ -1,5 +1,6 @@
 package data.lab.ongdb.util;
 
+import data.lab.ongdb.schema.Schema;
 import org.junit.Test;
 
 /*
@@ -23,6 +24,14 @@ public class StringVerifyTest {
 
         System.out.println(StringVerify.isEnglish("GoogleMInc")); // true
         System.out.println(StringVerify.isChinese("GoogleMInc.")); // false
+    }
+
+    @Test
+    public void parseCypherPattern() {
+        String query="MATCH p=(:公司)-[:担保]->(org:公司)-[:拥有]->(:品牌)<-[:包含]-(:产品) ";
+        char[] chars=query.toCharArray();
+        System.out.println(query.charAt(8));
+        new Schema().parse(query,null,null);
     }
 
 }
