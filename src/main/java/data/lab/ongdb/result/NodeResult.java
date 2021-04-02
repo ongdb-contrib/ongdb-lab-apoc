@@ -3,8 +3,10 @@ package data.lab.ongdb.result;
 import org.neo4j.graphdb.Node;
 
 /**
- * @author mh
- * @since 26.02.16
+ * @author Yc-Ma
+ * @PACKAGE_NAME: data.lab.ongdb.result.NodeResult
+ * @Description: TODO
+ * @date 2021/4/2 15:56
  */
 public class NodeResult {
     public final Node node;

@@ -20,8 +20,10 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 
 /**
- * @author mh
- * @since 26.02.16
+ * @author Yc-Ma
+ * @PACKAGE_NAME: data.lab.ongdb.util.TestUtil
+ * @Description: TODO
+ * @date 2021/4/2 15:56
  */
 public class TestUtil {
     public static void testCall(GraphDatabaseService db, String call, Consumer<Map<String, Object>> consumer) {
