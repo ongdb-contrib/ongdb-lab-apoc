@@ -8,6 +8,7 @@ import org.neo4j.graphdb.RelationshipType;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Arrays.asList;
@@ -28,6 +29,17 @@ public class VirtualRelationship implements Relationship {
 
     public VirtualRelationship(Node startNode, Node endNode, RelationshipType type) {
         this.id = MIN_ID.getAndDecrement();
+        this.startNode = startNode;
+        this.endNode = endNode;
+        this.type = type;
+    }
+
+    public VirtualRelationship(Long id, Node startNode, Node endNode, RelationshipType type) {
+        if (Optional.ofNullable(id).isPresent()) {
+            this.id = id;
+        } else {
+            this.id = MIN_ID.getAndDecrement();
+        }
         this.startNode = startNode;
         this.endNode = endNode;
         this.type = type;

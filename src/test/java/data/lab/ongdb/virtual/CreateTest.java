@@ -70,10 +70,11 @@ public class CreateTest {
         map.put("identityN", -109);
         map.put("relType", "KNOWS");
         map.put("props", props);
+        map.put("identityRel", null);
         map.put("labelsM", Collections.singletonList("Person"));
         map.put("m", props);
         map.put("identityM", -110);
-        Result res = db.execute("CALL olab.create.vPatternFull({labelsN},{n},{identityN},{relType},{props},{labelsM},{m},{identityM}) YIELD from,rel,to RETURN from,rel,to", map);
+        Result res = db.execute("CALL olab.create.vPatternFull({labelsN},{n},{identityN},{relType},{props},{identityRel},{labelsM},{m},{identityM}) YIELD from,rel,to RETURN from,rel,to", map);
         System.out.println(res.resultAsString());
     }
 }

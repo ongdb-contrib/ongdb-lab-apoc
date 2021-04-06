@@ -408,17 +408,20 @@ RETURN olab.escape(loadSql)
 ```
 
 ## 指定ID的虚拟节点数据
-- 指定ID生成虚拟节点
+- 指定ID生成虚拟节点【指定节点ID】
 ```
 //CALL apoc.create.vNode(['Person'],{name:'John'}) YIELD node RETURN node
 CALL olab.create.vNode(['行业'],{hcode:'HINDUS',name:'轻工'},-109) YIELD node RETURN node
 RETURN olab.create.vNode(['行业'],-109,{hcode:'HINDUS',name:'轻工'}) AS node
 ```
-- 指定节点ID生成虚拟PATH
+- 指定节点ID生成虚拟PATH【指定节点ID，生成原子性关系ID】
 ```
 //CALL apoc.create.vPatternFull(['Person'],{name:'John'},'KNOWS',{since:2010},['Person'],{name:'Jane'}) YIELD from,rel,to RETURN from,rel,to
-CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010},['Person'],{name:'Jane'},-110) YIELD from,rel,to WITH (from)-[rel]->(to) AS path RETURN path
+CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010},null,['Person'],{name:'Jane'},-110) YIELD from,rel,to WITH (from)-[rel]->(to) AS path RETURN path
 UNION 
-CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010},['Person'],{name:'Jane'},-111) YIELD from,rel,to WITH (from)-[rel]->(to) AS path RETURN path
+CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010},null,['Person'],{name:'Jane'},-111) YIELD from,rel,to WITH (from)-[rel]->(to) AS path RETURN path
+```
+```
+CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010},null,['Person'],{name:'Jane'},-111) YIELD from,rel,to WITH (from)-[rel]->(to) AS path RETURN path
 ```
 

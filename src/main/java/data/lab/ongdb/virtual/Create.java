@@ -73,13 +73,17 @@ public class Create {
      */
     @Procedure(name = "olab.create.vPatternFull", mode = Mode.READ)
     @Description("olab.create.vPatternFull(['LabelA'],{key:value},'KNOWS',{key:value,...},['LabelB'],{key:value}) returns a virtual pattern")
-    public Stream<VirtualPathResult> vPatternFull(@Name("labelsN") List<String> labelsN, @Name("n") Map<String, Object> n, @Name("identityN") Long identityN,
-                                                  @Name("relType") String relType, @Name("props") Map<String, Object> props,
-                                                  @Name("labelsM") List<String> labelsM, @Name("m") Map<String, Object> m, @Name("identityM") Long identityM) {
+    public Stream<VirtualPathResult> vPatternFull(@Name("labelsN") List<String> labelsN, @Name("n") Map<String, Object> n,
+                                                  @Name("identityN") Long identityN,
+                                                  @Name("relType") String relType,
+                                                  @Name("props") Map<String, Object> props,
+                                                  @Name(value = "identityRel") Long identityRel,
+                                                  @Name("labelsM") List<String> labelsM, @Name("m") Map<String, Object> m,
+                                                  @Name("identityM") Long identityM) {
         RelationshipType type = withName(relType);
         VirtualNode from = new VirtualNode(identityN, Util.labels(labelsN), n, db);
         VirtualNode to = new VirtualNode(identityM, Util.labels(labelsM), m, db);
-        Relationship rel = new VirtualRelationship(from, to, type).withProperties(props);
+        Relationship rel = new VirtualRelationship(identityRel,from, to, type).withProperties(props);
         return Stream.of(new VirtualPathResult(from, rel, to));
     }
 }
