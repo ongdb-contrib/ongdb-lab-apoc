@@ -65,6 +65,7 @@ public class Create {
      * @param identityN:给节点指定的唯一ID
      * @param relType:关系类型
      * @param props:属性MAP
+     * @param identityRel:关系的唯一ID
      * @param labelsM:标签列表
      * @param m:属性MAP
      * @param identityM:给节点指定的唯一ID
