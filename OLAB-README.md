@@ -425,3 +425,9 @@ CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010}
 CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010},null,['Person'],{name:'Jane'},-111) YIELD from,rel,to WITH (from)-[rel]->(to) AS path RETURN path
 ```
 
+## 支持执行复杂的SQL存储过程-查询同时支持更新
+```
+CALL olab.load.jdbc('jdbc:mysql://datalab-contentdb-dev.crkldnwly6ki.rds.cn-north-1.amazonaws.com.cn:3306/analytics_graph_data?user=dev&password=datalabgogo&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC','SELECT autoNodeId(?) AS autoNodeId;',['HORG20f2833a17034a812349e1933d9c5e5f1111'])
+```
+
+
