@@ -154,6 +154,23 @@ public class FileUtil {
     }
 
     /**
+     * @param
+     * @return
+     * @Description: TODO(获取文件内容)
+     */
+    public static String getFileContent(String catalog, String lastIdFileName) {
+        File dir = new File(catalog);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File file = new File(dir, lastIdFileName);
+        if (!file.getAbsoluteFile().exists()) {
+            return null;
+        }
+        return getFileContent(file);
+    }
+
+    /**
      * 读取文件
      *
      * @param file
@@ -494,6 +511,30 @@ public class FileUtil {
             return builder.toString();
         }
         return string;
+    }
+
+    /**
+     * 写一个新文件
+     *
+     * @param fileName 文件名
+     * @param content  文件内容
+     */
+    public static void writeFileByNewFile(String fileName, String content) {
+        BufferedWriter out = null;
+
+        try {
+            out = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(fileName, false), "UTF-8"));
+            out.write(content);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
 

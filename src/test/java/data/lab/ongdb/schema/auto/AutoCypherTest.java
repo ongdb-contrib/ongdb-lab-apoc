@@ -18,6 +18,141 @@ import static org.junit.Assert.*;
  */
 public class AutoCypherTest {
 
+    private static final String JSON_01="{\n" +
+            "  \"graph\": {\n" +
+            "    \"nodes\": [\n" +
+            "      {\n" +
+            "        \"id\": \"-1024\",\n" +
+            "        \"labels\": [\n" +
+            "          \"å…¬å¸\"\n" +
+            "        ],\n" +
+            "        \"properties_filter\": [\n" +
+            "          {\n" +
+            "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"joint\": \"AND\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"count\": \"count>=0 AND count<=10\"\n" +
+            "          }\n" +
+            "        ],\n" +
+            "        \"es_filter\": [\n" +
+            "          {\n" +
+            "            \"es_url\": \"10.20.13.130:9200\",\n" +
+            "            \"index_name\": \"index_name_1\",\n" +
+            "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-70549398\",\n" +
+            "        \"labels\": [\n" +
+            "          \"å“ç‰Œ\"\n" +
+            "        ],\n" +
+            "        \"properties_filter\": [\n" +
+            "          {\n" +
+            "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"joint\": \"AND\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"count\": \"count>=0 AND count<=10\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"joint\": \"AND\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"num\": \"num>=0\"\n" +
+            "          }\n" +
+            "        ],\n" +
+            "        \"es_filter\": [\n" +
+            "          {\n" +
+            "            \"es_url\": \"10.20.13.130:9200\",\n" +
+            "            \"index_name\": \"index_name_1\",\n" +
+            "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-1026\",\n" +
+            "        \"labels\": [\n" +
+            "          \"å…¬å¸\"\n" +
+            "        ],\n" +
+            "        \"properties_filter\": [\n" +
+            "          {\n" +
+            "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"joint\": \"AND\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"count\": \"count>=0 AND count<=10\"\n" +
+            "          }\n" +
+            "        ],\n" +
+            "        \"es_filter\": [\n" +
+            "          {\n" +
+            "            \"es_url\": \"10.20.13.130:9200\",\n" +
+            "            \"index_name\": \"index_name_1\",\n" +
+            "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"relationships\": [\n" +
+            "      {\n" +
+            "        \"id\": \"-71148967\",\n" +
+            "        \"type\": \"æ‹¥æœ‰\",\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-70549398\",\n" +
+            "        \"properties_filter\": [\n" +
+            "          {\n" +
+            "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"joint\": \"AND\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"count\": \"count>=0\"\n" +
+            "          }\n" +
+            "        ],\n" +
+            "        \"es_filter\": [\n" +
+            "          {\n" +
+            "            \"es_url\": \"10.20.13.130:9200\",\n" +
+            "            \"index_name\": \"index_name_1\",\n" +
+            "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-11148067\",\n" +
+            "        \"type\": \"æ‹…ä¿\",\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-1026\",\n" +
+            "        \"properties_filter\": [\n" +
+            "          {\n" +
+            "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"joint\": \"AND\"\n" +
+            "          },\n" +
+            "          {\n" +
+            "            \"count\": \"count>=0\"\n" +
+            "          }\n" +
+            "        ],\n" +
+            "        \"es_filter\": [\n" +
+            "          {\n" +
+            "            \"es_url\": \"10.20.13.130:9200\",\n" +
+            "            \"index_name\": \"index_name_1\",\n" +
+            "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
+
     @Test
     public void cypher() {
         AutoCypher autoCypher = new AutoCypher();
@@ -27,7 +162,7 @@ public class AutoCypherTest {
                 "      {\n" +
                 "        \"id\": \"-1024\",\n" +
                 "        \"labels\": [\n" +
-                "          \"¹«Ë¾\"\n" +
+                "          \"å…¬å¸\"\n" +
                 "        ],\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
@@ -51,7 +186,7 @@ public class AutoCypherTest {
                 "      {\n" +
                 "        \"id\": \"-70549398\",\n" +
                 "        \"labels\": [\n" +
-                "          \"Æ·ÅÆ\"\n" +
+                "          \"å“ç‰Œ\"\n" +
                 "        ],\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
@@ -82,7 +217,7 @@ public class AutoCypherTest {
                 "    \"relationships\": [\n" +
                 "      {\n" +
                 "        \"id\": \"-71148967\",\n" +
-                "        \"type\": \"·Ç±êÎ¥Ô¼\",\n" +
+                "        \"type\": \"éæ ‡è¿çº¦\",\n" +
                 "        \"startNode\": \"-1024\",\n" +
                 "        \"endNode\": \"-70549398\",\n" +
                 "        \"properties_filter\": [\n" +
@@ -107,8 +242,8 @@ public class AutoCypherTest {
                 "    ]\n" +
                 "  }\n" +
                 "}";
-        // Èë²ÎJSON¡¾Ôİ²»Ö§³ÖÊôĞÔ¼ä²¼¶û»òÌõ¼ş¡¿
-        autoCypher.cypher(json,0,50);
+        // å…¥å‚JSONã€æš‚ä¸æ”¯æŒå±æ€§é—´å¸ƒå°”æˆ–æ¡ä»¶ã€‘
+        autoCypher.cypher(JSON_01,0,50);
     }
 }
 
