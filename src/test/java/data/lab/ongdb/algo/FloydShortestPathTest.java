@@ -1,6 +1,5 @@
-package data.lab.ongdb.schema.auto;
+package data.lab.ongdb.algo;
 
-import data.lab.ongdb.algo.FloydShortestPath;
 import org.junit.Test;
 
 /*

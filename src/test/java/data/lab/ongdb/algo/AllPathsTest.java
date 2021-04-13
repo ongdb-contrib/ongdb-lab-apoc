@@ -1,4 +1,4 @@
-package data.lab.ongdb.schema.auto;
+package data.lab.ongdb.algo;
 
 /*
  *
@@ -6,7 +6,6 @@ package data.lab.ongdb.schema.auto;
  *
  */
 
-import data.lab.ongdb.algo.AllPaths;
 import data.lab.ongdb.structure.AdjacencyNode;
 import data.lab.ongdb.structure.Triple;
 import org.junit.Test;
