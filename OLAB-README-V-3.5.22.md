@@ -80,7 +80,6 @@ MATCH p=(n)-[*..2]-(f)-[*..2]-(m) WHERE n.name CONTAINS row1 AND m.name CONTAINS
 CALL olab.index.addChineseFulltextIndex('IKAnalyzer', ['description'], 'Loc') YIELD message RETURN message
 CALL olab.index.addChineseFulltextIndex('IKAnalyzer',['description','year'], 'Loc') YIELD message RETURN message
 CALL olab.index.addChineseFulltextIndex('IKAnalyzer', ['description','year'],'LocProvince') YIELD message RETURN message
-
 ```
 
 ### 中文全文索引查询（可跨标签类型检索）- *-1表示数据量不做限制返回全部 *-lucene查询示例 
@@ -94,7 +93,6 @@ CALL olab.index.chineseFulltextIndexSearch('IKAnalyzer', '+(site_name:东方网)
 CALL olab.index.chineseFulltextIndexSearch('IKAnalyzer', '_entity_name:(+小 +合 -"婷" -诗 -"Jason Lim")',10) YIELD node,weight RETURN node,weight
 -- 范围查询
 CALL olab.index.chineseFulltextIndexSearch('IKAnalyzer', '+(name:东方网) AND +(testTime:[1582279892461 TO 1582279892461])',10) YIELD node,weight RETURN node,weight
-
 ```
 
 ### 为节点添加索引
@@ -127,6 +125,7 @@ smart模式的下分词结果为：
 而非smart模式下的分词结果为：
      张三 | 三 | 说的 | 的确 | 的 | 确实 | 实在 | 在理
 ```
+
 
 ### 生成文本指纹
 ```cql
