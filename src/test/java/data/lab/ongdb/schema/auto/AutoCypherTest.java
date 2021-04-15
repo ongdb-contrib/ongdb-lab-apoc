@@ -1,8 +1,15 @@
 package data.lab.ongdb.schema.auto;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Result;
+import org.neo4j.harness.junit.Neo4jRule;
 
-import static org.junit.Assert.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  *
@@ -18,7 +25,111 @@ import static org.junit.Assert.*;
  */
 public class AutoCypherTest {
 
-    private static final String JSON_01="{\n" +
+    @Rule
+    public Neo4jRule neo4j = new Neo4jRule().withFunction(AutoCypher.class);
+
+    @Rule
+    public Neo4jRule neo4jProc = new Neo4jRule().withProcedure(AutoCypher.class);
+
+    String JSON_2 = "{\n" +
+            "  \"graph\": {\n" +
+            "    \"nodes\": [\n" +
+            "      {\n" +
+            "        \"id\": \"-1024\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-1026\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-1027\"\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"relationships\": [\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-1026\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1026\",\n" +
+            "        \"endNode\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1026\",\n" +
+            "        \"endNode\": \"-1027\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
+    String JSON_3 = "{\n" +
+            "  \"graph\": {\n" +
+            "    \"nodes\": [\n" +
+            "      {\n" +
+            "        \"id\": \"-1024\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-1026\"\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"relationships\": [\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-1026\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1026\",\n" +
+            "        \"endNode\": \"-70549398\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
+    String JSON_4 = "{\n" +
+            "  \"graph\": {\n" +
+            "    \"nodes\": [\n" +
+            "      {\n" +
+            "        \"id\": \"-1024\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"id\": \"-1026\"\n" +
+            "      },\n" +
+            "       {\n" +
+            "        \"id\": \"-1028\"\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"relationships\": [\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-70549398\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1024\",\n" +
+            "        \"endNode\": \"-1026\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"startNode\": \"-1026\",\n" +
+            "        \"endNode\": \"-1028\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "}";
+
+    private static final String JSON_01 = "{\n" +
             "  \"graph\": {\n" +
             "    \"nodes\": [\n" +
             "      {\n" +
@@ -156,7 +267,7 @@ public class AutoCypherTest {
     @Test
     public void cypher() {
         AutoCypher autoCypher = new AutoCypher();
-        String json="{\n" +
+        String json = "{\n" +
                 "  \"graph\": {\n" +
                 "    \"nodes\": [\n" +
                 "      {\n" +
@@ -243,7 +354,88 @@ public class AutoCypherTest {
                 "  }\n" +
                 "}";
         // 入参JSON【暂不支持属性间布尔或条件】
-        autoCypher.cypher(JSON_01,0,50);
+        autoCypher.cypher(JSON_01, 0, 50);
+
     }
+
+    @Test
+    public void isLoopGraph() {
+        AutoCypher autoCypher = new AutoCypher();
+        // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
+        System.out.println("JSON_2是否包含环路：" + autoCypher.isLoopGraph(JSON_2));
+        System.out.println("JSON_3是否包含环路：" + autoCypher.isLoopGraph(JSON_3));
+        System.out.println("JSON_4是否包含环路：" + autoCypher.isLoopGraph(JSON_4));
+    }
+
+    @Test
+    public void loopGraphNodeSeqIds() {
+        AutoCypher autoCypher = new AutoCypher();
+        // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
+        System.out.println("JSON_2是否包含环路：" + autoCypher.loopGraphNodeSeqIds(JSON_2));
+        System.out.println("JSON_3是否包含环路：" + autoCypher.loopGraphNodeSeqIds(JSON_3));
+        System.out.println("JSON_4是否包含环路：" + autoCypher.loopGraphNodeSeqIds(JSON_4));
+    }
+
+    @Test
+    public void countPathStr() {
+        AutoCypher autoCypher = new AutoCypher();
+        System.out.println(autoCypher.countPathStr("4->6->1->5->3->8->2"));
+        System.out.println(autoCypher.countPathStr("4->6->1"));
+        System.out.println(autoCypher.countPathStr("4->6"));
+    }
+
+    @Test
+    public void schemaIsLoop() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("json", JSON_3);
+        // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
+        Result result = db.execute("RETURN olab.schema.is.loop({json}) AS isLoopGraph", hashMap);
+        boolean string = (boolean) result.next().get("isLoopGraph");
+        System.out.println(string);
+    }
+
+    @Test
+    public void schemaLoopGraph() {
+        GraphDatabaseService db = neo4jProc.getGraphDatabaseService();
+        Map<String, Object> map = new HashMap<>();
+        // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
+        map.put("graphData", JSON_2);
+        Result res = db.execute("CALL olab.schema.loop({graphData}) YIELD loopResultList RETURN loopResultList", map);
+        List<List<Long>> list = (List) res.next().get("loopResultList");
+        System.out.println("打印环路分析结果：");
+        for (List<Long> longs : list) {
+            for (int i = 0; i < longs.size(); i++) {
+                System.out.print(longs.get(i));
+                if (i == longs.size() - 1) {
+                    System.out.println("\n");
+                } else {
+                    System.out.print("->");
+                }
+            }
+        }
+    }
+
+    @Test
+    public void schemaLoopCypher() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("ids", new Integer[]{2, 104, 4, 7, 0, 9, 2});
+        // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
+        Result result = db.execute("RETURN olab.schema.loop.cypher({ids}) AS cypher", hashMap);
+        String cypher = (String) result.next().get("cypher");
+        System.out.println(cypher);
+    }
+
+    @Test
+    public void atomicId() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        for (;;) {
+            Result result = db.execute("RETURN olab.schema.atomic.id() AS atomicId");
+            Long cypher = (Long) result.next().get("atomicId");
+            System.out.println(cypher);
+        }
+    }
+
 }
 

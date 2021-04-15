@@ -1,6 +1,6 @@
 package data.lab.ongdb.similarity;
 
-import data.lab.ongdb.result.PathResult;
+import data.lab.ongdb.result.PathAggResult;
 import data.lab.ongdb.similarity.simhash.SimHash;
 import data.lab.ongdb.similarity.simhash.TextFingerPrint;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -36,12 +36,12 @@ public class SimilarityProce {
      */
     @Procedure(name = "olab.simhash.build.rel", mode = Mode.WRITE)
     @Description("CALL olab.simhash.build.rel({nodeN},{nodeM},{nodeNsimhashFieldName},{nodeMsimhashFieldName},{relName}),{hammingDistanceThreshold},{recordHimmingDistance}) YIELD pathJ")
-    public Stream<PathResult> simHashSimilarityPathBuild(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
-                                                         @Name("nodeNsimhashFieldName") String nodeNsimhashFieldName,
-                                                         @Name("nodeMsimhashFieldName") String nodeMsimhashFieldName,
-                                                         @Name("relName") String relName,
-                                                         @Name("hammingDistanceThreshold") Number hammingDistanceThreshold,
-                                                         @Name("recordHimDistance") boolean recordHimmingDistance) {
+    public Stream<PathAggResult> simHashSimilarityPathBuild(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
+                                                            @Name("nodeNsimhashFieldName") String nodeNsimhashFieldName,
+                                                            @Name("nodeMsimhashFieldName") String nodeMsimhashFieldName,
+                                                            @Name("relName") String relName,
+                                                            @Name("hammingDistanceThreshold") Number hammingDistanceThreshold,
+                                                            @Name("recordHimDistance") boolean recordHimmingDistance) {
         if (nodeN.hasProperty(nodeNsimhashFieldName) && nodeM.hasProperty(nodeMsimhashFieldName)) {
             String fingerPrintN = String.valueOf(nodeN.getProperty(nodeNsimhashFieldName));
             String fingerPrintM = String.valueOf(nodeM.getProperty(nodeMsimhashFieldName));
@@ -65,13 +65,13 @@ public class SimilarityProce {
                         if (resultPath.hasNext()) {
                             Map<String, Object> map = resultPath.next();
                             Object object = map.get("p");
-                            return Stream.of(new PathResult(object));
+                            return Stream.of(new PathAggResult(object));
                         }
                     }
                 }
             }
         }
-        return Stream.of(new PathResult());
+        return Stream.of(new PathAggResult());
     }
 
     /**
@@ -87,12 +87,12 @@ public class SimilarityProce {
      */
     @Procedure(name = "olab.simhash.build.rel.cross", mode = Mode.WRITE)
     @Description("CALL olab.simhash.build.rel.cross({nodeN},{nodeM},{['filed1','field2'...]},{['filed1','field2'...]},{relName}),{hammingDistanceThreshold},{recordHimmingDistance}) YIELD pathJ")
-    public Stream<PathResult> simHashSimilarityPathBuild(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
-                                                         @Name("nodeNsimhashFieldName") List<String> nodeNsimhashFieldNameList,
-                                                         @Name("nodeMsimhashFieldName") List<String> nodeMsimhashFieldNameList,
-                                                         @Name("relName") String relName,
-                                                         @Name("hammingDistanceThreshold") Number hammingDistanceThreshold,
-                                                         @Name("recordHimDistance") boolean recordHimmingDistance) {
+    public Stream<PathAggResult> simHashSimilarityPathBuild(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
+                                                            @Name("nodeNsimhashFieldName") List<String> nodeNsimhashFieldNameList,
+                                                            @Name("nodeMsimhashFieldName") List<String> nodeMsimhashFieldNameList,
+                                                            @Name("relName") String relName,
+                                                            @Name("hammingDistanceThreshold") Number hammingDistanceThreshold,
+                                                            @Name("recordHimDistance") boolean recordHimmingDistance) {
         for (String nodeNsimhashFieldName : nodeNsimhashFieldNameList) {
             for (String nodeMsimhashFieldName : nodeMsimhashFieldNameList) {
                 if (nodeN.hasProperty(nodeNsimhashFieldName) && nodeM.hasProperty(nodeMsimhashFieldName)) {
@@ -118,7 +118,7 @@ public class SimilarityProce {
                                 if (resultPath.hasNext()) {
                                     Map<String, Object> map = resultPath.next();
                                     Object object = map.get("p");
-                                    return Stream.of(new PathResult(object));
+                                    return Stream.of(new PathAggResult(object));
                                 }
                             }
                         }
@@ -126,7 +126,7 @@ public class SimilarityProce {
                 }
             }
         }
-        return Stream.of(new PathResult());
+        return Stream.of(new PathAggResult());
     }
 
     private boolean isMatchCurrentRel(long idN, long idM, String relName) {
@@ -148,12 +148,12 @@ public class SimilarityProce {
      */
     @Procedure(name = "olab.editDistance.build.rel", mode = Mode.WRITE)
     @Description("CALL olab.editDistance.build.rel({nodeN},{nodeM},{nodeNeditDistanceFieldName},{nodeMeditDistanceFieldName},{relName}),{editDistanceThreshold},{recordEditDistance}) YIELD pathJ")
-    public Stream<PathResult> editSimilarityPathBuild(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
-                                                      @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
-                                                      @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
-                                                      @Name("relName") String relName,
-                                                      @Name("editDistanceThreshold") double editDistanceThreshold,
-                                                      @Name("recordEditDistance") boolean recordEditDistance) {
+    public Stream<PathAggResult> editSimilarityPathBuild(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
+                                                         @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
+                                                         @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
+                                                         @Name("relName") String relName,
+                                                         @Name("editDistanceThreshold") double editDistanceThreshold,
+                                                         @Name("recordEditDistance") boolean recordEditDistance) {
         if (nodeN.hasProperty(nodeNeditDistanceFieldName) && nodeM.hasProperty(nodeMeditDistanceFieldName)) {
             String textN = String.valueOf(nodeN.getProperty(nodeNeditDistanceFieldName));
             String textM = String.valueOf(nodeM.getProperty(nodeMeditDistanceFieldName));
@@ -178,13 +178,13 @@ public class SimilarityProce {
                         if (resultPath.hasNext()) {
                             Map<String, Object> map = resultPath.next();
                             Object object = map.get("p");
-                            return Stream.of(new PathResult(object));
+                            return Stream.of(new PathAggResult(object));
                         }
                     }
                 }
             }
         }
-        return Stream.of(new PathResult());
+        return Stream.of(new PathAggResult());
     }
 
     /**
@@ -202,14 +202,14 @@ public class SimilarityProce {
      */
     @Procedure(name = "olab.editDistance.build.rel.cross", mode = Mode.WRITE)
     @Description("CALL olab.editDistance.build.rel.cross({nodeN},{nodeM},{crossRel},{crossNodeFiledName},{nodeNeditDistanceFieldName},{nodeMeditDistanceFieldName},{relName}),{editDistanceThreshold},{recordEditDistance}) YIELD pathJ")
-    public Stream<PathResult> editSimilarityPathBuildCross(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
-                                                           @Name("crossRel") String crossRel,
-                                                           @Name("crossNodeFiledName") String crossNodeFiledName,
-                                                           @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
-                                                           @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
-                                                           @Name("relName") String relName,
-                                                           @Name("editDistanceThreshold") double editDistanceThreshold,
-                                                           @Name("recordEditDistance") boolean recordEditDistance) {
+    public Stream<PathAggResult> editSimilarityPathBuildCross(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
+                                                              @Name("crossRel") String crossRel,
+                                                              @Name("crossNodeFiledName") String crossNodeFiledName,
+                                                              @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
+                                                              @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
+                                                              @Name("relName") String relName,
+                                                              @Name("editDistanceThreshold") double editDistanceThreshold,
+                                                              @Name("recordEditDistance") boolean recordEditDistance) {
         List<String> nodeNCrossNameList = getNodeCrossNameList(nodeN, crossRel, crossNodeFiledName, nodeNeditDistanceFieldName);
         List<String> nodeMCrossNameList = getNodeCrossNameList(nodeM, crossRel, crossNodeFiledName, nodeMeditDistanceFieldName);
         Map<String, Object> mapEditDis = isSimilarity(nodeNCrossNameList, nodeMCrossNameList, editDistanceThreshold);
@@ -231,11 +231,11 @@ public class SimilarityProce {
                 if (resultPath.hasNext()) {
                     Map<String, Object> map = resultPath.next();
                     Object object = map.get("p");
-                    return Stream.of(new PathResult(object));
+                    return Stream.of(new PathAggResult(object));
                 }
             }
         }
-        return Stream.of(new PathResult());
+        return Stream.of(new PathAggResult());
     }
 
     private Map<String, Object> isSimilarity(List<String> nodeNCrossNameList, List<String> nodeMCrossNameList, double editDistanceThreshold) {
@@ -317,15 +317,15 @@ public class SimilarityProce {
      */
     @Procedure(name = "olab.editDistance.build.rel.cross.encn", mode = Mode.WRITE)
     @Description("CALL olab.editDistance.build.rel.cross.encn({nodeN},{nodeM},{crossRel},{crossNodeFiledName},{nodeNeditDistanceFieldName},{nodeMeditDistanceFieldName},{relName}),{editDistanceThresholdEn},{editDistanceThresholdCn},{recordEditDistance}) YIELD pathJ")
-    public Stream<PathResult> editSimilarityPathBuildCross(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
-                                                           @Name("crossRel") String crossRel,
-                                                           @Name("crossNodeFiledName") String crossNodeFiledName,
-                                                           @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
-                                                           @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
-                                                           @Name("relName") String relName,
-                                                           @Name("editDistanceThresholdEn") double editDistanceThresholdEn,
-                                                           @Name("editDistanceThresholdCn") double editDistanceThresholdCn,
-                                                           @Name("recordEditDistance") boolean recordEditDistance) {
+    public Stream<PathAggResult> editSimilarityPathBuildCross(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
+                                                              @Name("crossRel") String crossRel,
+                                                              @Name("crossNodeFiledName") String crossNodeFiledName,
+                                                              @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
+                                                              @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
+                                                              @Name("relName") String relName,
+                                                              @Name("editDistanceThresholdEn") double editDistanceThresholdEn,
+                                                              @Name("editDistanceThresholdCn") double editDistanceThresholdCn,
+                                                              @Name("recordEditDistance") boolean recordEditDistance) {
         List<String> nodeNCrossNameList = getNodeCrossNameList(nodeN, crossRel, crossNodeFiledName, nodeNeditDistanceFieldName);
         List<String> nodeMCrossNameList = getNodeCrossNameList(nodeM, crossRel, crossNodeFiledName, nodeMeditDistanceFieldName);
         Map<String, Object> mapEditDis = isSimilarity(nodeNCrossNameList, nodeMCrossNameList, editDistanceThresholdEn, editDistanceThresholdCn);
@@ -347,11 +347,11 @@ public class SimilarityProce {
                 if (resultPath.hasNext()) {
                     Map<String, Object> map = resultPath.next();
                     Object object = map.get("p");
-                    return Stream.of(new PathResult(object));
+                    return Stream.of(new PathAggResult(object));
                 }
             }
         }
-        return Stream.of(new PathResult());
+        return Stream.of(new PathAggResult());
     }
 
     /**
@@ -370,15 +370,15 @@ public class SimilarityProce {
      */
     @Procedure(name = "olab.editDistance.build.rel.cross.encn.multirel", mode = Mode.WRITE)
     @Description("CALL olab.editDistance.build.rel.cross.encn.multirel({nodeN},{nodeM},{crossRels},{crossNodeFiledName},{nodeNeditDistanceFieldName},{nodeMeditDistanceFieldName},{relName}),{editDistanceThresholdEn},{editDistanceThresholdCn},{recordEditDistance}) YIELD pathJ")
-    public Stream<PathResult> editSimilarityPathBuildCross(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
-                                                           @Name("crossRels") List<String> crossRels,
-                                                           @Name("crossNodeFiledName") String crossNodeFiledName,
-                                                           @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
-                                                           @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
-                                                           @Name("relName") String relName,
-                                                           @Name("editDistanceThresholdEn") double editDistanceThresholdEn,
-                                                           @Name("editDistanceThresholdCn") double editDistanceThresholdCn,
-                                                           @Name("recordEditDistance") boolean recordEditDistance) {
+    public Stream<PathAggResult> editSimilarityPathBuildCross(@Name("nodeN") Node nodeN, @Name("nodeM") Node nodeM,
+                                                              @Name("crossRels") List<String> crossRels,
+                                                              @Name("crossNodeFiledName") String crossNodeFiledName,
+                                                              @Name("nodeNeditDistanceFieldName") String nodeNeditDistanceFieldName,
+                                                              @Name("nodeMeditDistanceFieldName") String nodeMeditDistanceFieldName,
+                                                              @Name("relName") String relName,
+                                                              @Name("editDistanceThresholdEn") double editDistanceThresholdEn,
+                                                              @Name("editDistanceThresholdCn") double editDistanceThresholdCn,
+                                                              @Name("recordEditDistance") boolean recordEditDistance) {
         List<String> nodeNCrossNameList = getNodeCrossNameListMultiRel(nodeN, crossRels, crossNodeFiledName, nodeNeditDistanceFieldName);
         List<String> nodeMCrossNameList = getNodeCrossNameListMultiRel(nodeM, crossRels, crossNodeFiledName, nodeMeditDistanceFieldName);
         Map<String, Object> mapEditDis = isSimilarity(nodeNCrossNameList, nodeMCrossNameList, editDistanceThresholdEn, editDistanceThresholdCn);
@@ -400,11 +400,11 @@ public class SimilarityProce {
                 if (resultPath.hasNext()) {
                     Map<String, Object> map = resultPath.next();
                     Object object = map.get("p");
-                    return Stream.of(new PathResult(object));
+                    return Stream.of(new PathAggResult(object));
                 }
             }
         }
-        return Stream.of(new PathResult());
+        return Stream.of(new PathAggResult());
     }
 
     /**

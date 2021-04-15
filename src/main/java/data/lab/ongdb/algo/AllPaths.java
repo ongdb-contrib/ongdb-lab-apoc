@@ -138,7 +138,7 @@ public class AllPaths extends AdjListGraph {
         allPaths.add(o);
         allPathsStr.add(builder.toString());
         if (super.isDEBUG()) {
-            System.out.println("\n");
+            System.out.print("\n");
         }
     }
 
@@ -378,6 +378,16 @@ public class AllPaths extends AdjListGraph {
             }
         }
         return path;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(清空搜索的结果集)
+     */
+    public void clear() {
+        this.allPaths.clear();
+        this.allPathsStr.clear();
     }
 }
 

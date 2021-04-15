@@ -444,6 +444,5 @@ public class SchemaTest {
         Result res =   db.execute("CALL olab.schema.parse({query},{schemaMap},{dataSchemaList}) YIELD query,paras,key RETURN query,paras,key",map);
         System.out.println(res.resultAsString());
     }
-
 }
 

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /**
  * @author Yc-Ma
  * @PACKAGE_NAME: data.lab.ongdb.schema.auto
- * @Description: TODO£¨Two vertex all paths£©
+ * @Description: TODOï¼ˆTwo vertex all pathsï¼‰
  * @date 2021/4/13 14:09
  */
 public class AllPathsTest {
@@ -23,15 +23,15 @@ public class AllPathsTest {
     public void getAllPaths_1() {
         AllPaths vertexAllPaths = new AllPaths(8);
 
-        // Í¼£ºimage/vertex-edge-matrix-test.png
-        // ²åÈë¶¥µã
+        // å›¾ï¼šimage/vertex-edge-matrix-test.png
+        // æ’å…¥é¡¶ç‚¹
         int[] vertexs = new int[]{1, 2, 3, 4, 5, 6, 7, 8};
         for (int i = 0; i < vertexs.length; i++) {
             int vertex = vertexs[i];
             System.out.println("VERTEX INDEX NUMBER:" + vertexAllPaths.insertVertex(vertex));
         }
 
-        // ²åÈë±ß
+        // æ’å…¥è¾¹
         for (int i = 0; i < vertexs.length; i++) {
             for (int j = 0; j < vertexs.length; j++) {
                 if (
@@ -56,20 +56,20 @@ public class AllPathsTest {
         }
 
 //        vertexAllPaths.setDEBUG(true);
-//        // ÇóËùÓĞ¶¥µãÖ®¼äµÄ×î¶ÌÂ·¾¶
+//        // æ±‚æ‰€æœ‰é¡¶ç‚¹ä¹‹é—´çš„æœ€çŸ­è·¯å¾„
 //        vertexAllPaths.shortestPath();
 //
-//        // ÇóÒ»¶Ô¶¥µãÖ®¼äµÄ×î¶ÌÂ·¾¶
+//        // æ±‚ä¸€å¯¹é¡¶ç‚¹ä¹‹é—´çš„æœ€çŸ­è·¯å¾„
         vertexAllPaths.runAllPaths(7, 6);
 
     }
 
     @Test
     public void getAllPaths_2() {
-        // ¶ÔÓ¦Í¼:image/vertex-edge-matrix-test.png
+        // å¯¹åº”å›¾:image/vertex-edge-matrix-test.png
         AllPaths allPaths = new AllPaths(8);
 
-        /* ¶¨Òå½Úµã¹ØÏµ */
+        /* å®šä¹‰èŠ‚ç‚¹å…³ç³» */
         int nodeRelations[][] =
                 {
                         {1, 2},      //0
@@ -85,10 +85,10 @@ public class AllPathsTest {
         allPaths.setDEBUG(true);
         allPaths.initGraphAdjacencyList(nodeRelations);
 
-        // ¿ªÊ¼ËÑË÷ËùÓĞÂ·¾¶
+        // å¼€å§‹æœç´¢æ‰€æœ‰è·¯å¾„
         allPaths.allPaths(7, 6);
 
-        // »ñÈ¡ËùÓĞÂ·¾¶
+        // è·å–æ‰€æœ‰è·¯å¾„
         allPaths.getAllPathsStr();
         /**
          * 7->3->1->0->2->5->6
@@ -103,7 +103,7 @@ public class AllPathsTest {
     public void getAllPaths_3() {
         AllPaths allPaths = new AllPaths(8);
 
-        /* ¶¨Òå½Úµã¹ØÏµ */
+        /* å®šä¹‰èŠ‚ç‚¹å…³ç³» */
         int nodeRelations[][] =
                 {
                         {1, 2},      //0
@@ -117,12 +117,12 @@ public class AllPathsTest {
                 };
 
         AdjacencyNode[] node = new AdjacencyNode[8];
-        // ¶¨Òå½ÚµãÊı×é
+        // å®šä¹‰èŠ‚ç‚¹æ•°ç»„
         for (int i = 0; i < nodeRelations.length; i++) {
             node[i] = new AdjacencyNode();
             node[i].setName(String.valueOf(i));
         }
-        // ¶¨ÒåÓë½ÚµãÏà¹ØÁªµÄ½Úµã¼¯ºÏ
+        // å®šä¹‰ä¸èŠ‚ç‚¹ç›¸å…³è”çš„èŠ‚ç‚¹é›†åˆ
         for (int i = 0; i < nodeRelations.length; i++) {
             ArrayList<AdjacencyNode> List = new ArrayList<>();
             for (int j = 0; j < nodeRelations[i].length; j++) {
@@ -134,57 +134,51 @@ public class AllPathsTest {
         allPaths.setDEBUG(true);
         allPaths.initGraphAdjacencyList(node);
 
-        // ¿ªÊ¼ËÑË÷ËùÓĞÂ·¾¶
+        // å¼€å§‹æœç´¢æ‰€æœ‰è·¯å¾„
         allPaths.allPaths(4, 6);
 
-        // »ñÈ¡ËùÓĞÂ·¾¶
+        // è·å–æ‰€æœ‰è·¯å¾„
         ArrayList<Object[]> paths1 = allPaths.getAllPaths();
         ArrayList<String> paths2 = allPaths.getAllPathsStr();
         System.out.println(paths1.size());
         System.out.println(paths2.size());
     }
 
-//    @Test
-//    public void singlePath() {
-//        AllPaths allPaths = new AllPaths(4);
-//
-//        // ²åÈë¶¥µã
-//        int[] vertexs = new int[]{1, 2, 3, 4};
-//        for (int i = 0; i < vertexs.length; i++) {
-//            int vertex = vertexs[i];
-//            System.out.println("VERTEX INDEX NUMBER:" + allPaths.insertVertex(vertex));
-//        }
-//
-//        // ²åÈë±ß
-//        for (int i = 0; i < vertexs.length; i++) {
-//            for (int j = 0; j < vertexs.length; j++) {
-//                if (
-//                        ((i == 1-1 && j == 4-1) ||
-//                                (i == 4-1 && j == 3-1)) ||
-//                                (i == 3-1 && j == 2-1)
-//                ) {
-//                    allPaths.insertEdge(new Triple(i, j, 1));
-//                } else {
-//                    if (i != j) {
-//                        allPaths.insertEdge(new Triple(i, j, -1));
-//                    }
-//                }
-//
-//            }
-//        }
-//
-//        allPaths.setDEBUG(true);
-//        allPaths.initGraphAdjacencyList(new int[][]{vertexs});
-//
-//        // ¿ªÊ¼ËÑË÷ËùÓĞÂ·¾¶
-//        allPaths.allPaths(4, 6);
-//
-//        // ÇóÒ»¶Ô¶¥µãÖ®¼äµÄ×î¶ÌÂ·¾¶
-//        // »ñÈ¡ËùÓĞÂ·¾¶
-//        ArrayList<Object[]> paths1 = allPaths.getAllPaths();
-//        ArrayList<String> paths2 = allPaths.getAllPathsStr();
-//        System.out.println(paths1.size());
-//        paths2.forEach(System.out::println);
-//    }
+    /**
+     * @param
+     * @return
+     * @Description: TODO(å•å­å›¾æ¨¡å¼æµ‹è¯•)
+     */
+    @Test
+    public void singlePath() {
+        AllPaths allPaths = new AllPaths(7);
+
+        /* å®šä¹‰èŠ‚ç‚¹å…³ç³» */
+        int nodeRelations[][] =
+                {
+                        {3},      //0
+                        {2, 6},//1
+                        {1, 3, 4},    //2
+                        {0, 2, 5},    //3
+                        {2, 6},    //4
+                        {3},    //5
+                        {1, 4, 6},    //6
+                };
+
+        allPaths.setDEBUG(true);
+        allPaths.initGraphAdjacencyList(nodeRelations);
+
+        // å¼€å§‹æœç´¢æ‰€æœ‰è·¯å¾„
+        // å®šä¹‰ä¸¤ä¸ªé¡¶ç‚¹ã€ä¸åŒºåˆ†æ–¹å‘å¯è¾¾å³ä¸ºè·¯å¾„ã€‘ã€ä¸å«å›è·¯ã€‘
+        allPaths.allPaths(0, 3);
+
+        // è·å–æ‰€æœ‰è·¯å¾„
+        // æ±‚ä¸€å¯¹é¡¶ç‚¹ä¹‹é—´çš„æœ€çŸ­è·¯å¾„
+        // è·å–æ‰€æœ‰è·¯å¾„
+        ArrayList<Object[]> paths1 = allPaths.getAllPaths();
+        ArrayList<String> paths2 = allPaths.getAllPathsStr();
+        System.out.println(paths1.size());
+        paths2.forEach(System.out::println);
+    }
 }
 

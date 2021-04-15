@@ -429,5 +429,145 @@ CALL olab.create.vPatternFull(['Person'],{name:'John'},-109,'KNOWS',{since:2010}
 ```
 CALL olab.load.jdbc('jdbc:mysql://datalab-contentdb-dev.crkldnwly6ki.rds.cn-north-1.amazonaws.com.cn:3306/analytics_graph_data?user=dev&password=datalabgogo&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC','SELECT autoNodeId(?) AS autoNodeId;',['HORG20f2833a17034a812349e1933d9c5e5f1111'])
 ```
+## 使用函数分析无向环路【返回布尔值】
+- 传入GRAPH-DATA-JSON串判断是否包含环路
+```
+WITH '{"graph":{"nodes":[{"id":"-1024"},{"id":"-70549398"},{"id":"-1026"},{"id":"-1027"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"},{"startNode":"-1024","endNode":"-1026"},{"startNode":"-1026","endNode":"-70549398"},{"startNode":"-1026","endNode":"-1027"}]}}' AS graphData
+RETURN olab.schema.is.loop(graphData) AS isLoopGraph
+```
+```
+WITH '{"nodes":[{"id":"-1024"},{"id":"-70549398"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"}]}' AS graphData
+RETURN olab.schema.is.loop(graphData) AS isLoopGraph
+```
+- 判断路径中是否包含环路
+```
+MATCH path=(n)--()--()--()--()--()--()--()--()--()--(n) WITH olab.convert.json(path) AS graphData LIMIT 1
+RETURN olab.schema.is.loop(graphData) AS isLoopGraph
+```
+## 使用过程分析无向环路【返回路径节点序列ID】
+-  传入GRAPH-DATA-JSON串判断是否包含环路
+```
+WITH '{"graph":{"nodes":[{"id":"-1024"},{"id":"-70549398"},{"id":"-1026"},{"id":"-1027"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"},{"startNode":"-1024","endNode":"-1026"},{"startNode":"-1026","endNode":"-70549398"},{"startNode":"-1026","endNode":"-1027"}]}}' AS graphData
+CALL olab.schema.loop(graphData) YIELD loopResultList RETURN loopResultList
+```
+```
+WITH '{"nodes":[{"id":"-1024"},{"id":"-70549398"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"}]}' AS graphData
+CALL olab.schema.loop(graphData) YIELD loopResultList RETURN loopResultList
+```
+- 判断路径中是否包含环路
+```
+MATCH path=(n)--()--()--()--()--()--()--()--()--()--(n) WITH olab.convert.json(path) AS graphData LIMIT 1
+CALL olab.schema.loop(graphData) YIELD loopResultList RETURN loopResultList
+```
+- 统计环路个数
+```
+MATCH path=(n)--()--()--(n) WITH olab.convert.json(path) AS graphData LIMIT 1
+CALL olab.schema.loop(graphData) YIELD loopResultList RETURN SIZE(loopResultList) AS loopSize
+```
+- 统计环路个数
+```
+MATCH path=(n)--()--()--(n) WITH olab.convert.json(COLLECT(path)) AS graphData LIMIT 10
+CALL olab.schema.loop(graphData) YIELD loopResultList RETURN SIZE(loopResultList) AS loopSize
+```
+## 通过一组节点序列生成查询环路的CYPHER
+```
+WITH [2, 104, 4, 7, 0, 9, 2] AS ids
+RETURN olab.schema.loop.cypher(ids) AS cypher
+```
+
+## 通过一组节点序列查询环路
+```
+WITH [2, 104, 4, 7, 0, 9, 2] AS ids
+WITH olab.schema.loop.cypher(ids) AS cypher
+CALL apoc.cypher.run(cypher,null) YIELD value RETURN value.path AS path
+```
+
+## 分析子图的环路并查询环路
+```
+MATCH path=(n)--()--()--()--()--()--()--()--()--()--(n) WITH olab.convert.json(path) AS graphData LIMIT 1
+CALL olab.schema.loop(graphData) YIELD loopResultList WITH loopResultList
+UNWIND loopResultList AS idsSeqLoopGraph
+WITH olab.schema.loop.cypher(idsSeqLoopGraph) AS cypher
+CALL apoc.cypher.run(cypher,null) YIELD value RETURN value.path AS path
+```
+
+## 返回一个原子性ID
+```
+// 将环路子图标记上原子ID时使用
+RETURN olab.schema.atomic.id() AS atomicId
+```
+
+## JSON-STRING封装
+```
+MATCH path=(n)--()--()--(n) RETURN olab.convert.json(COLLECT(path)) AS graphData LIMIT 10
+MATCH path=(n)--()--()--(n) RETURN olab.convert.json(path) AS graphData LIMIT 10
+MATCH path=(n)-[r]-()--()--(n) RETURN olab.convert.json(r) AS graphData LIMIT 10
+MATCH path=(n)-[r]-()--()--(n) RETURN olab.convert.json(n) AS graphData LIMIT 10
+```
+
+## 获取所有顶点路径
+```
+// 加载一个子图
+MATCH path=(n)--()--()--(n)--() WITH path LIMIT 1 WITH olab.convert.json(COLLECT(path)) AS graphData
+// 获取所有顶点之间的路径节点序列
+CALL olab.schema.all.path(graphData) YIELD loopResultList RETURN loopResultList AS allPath
+```
+
+## 分析子图的环路并查询环路之后生成虚拟图
+### 案例一
+- 原始图【四顶点】【六环路】
+```
+MATCH path=(n)--()--()--(n)--() RETURN path LIMIT 1
+```
+- 无向环路虚拟图
+```
+// 加载一个子图
+MATCH path=(n)--()--()--(n)--() WITH path LIMIT 1 WITH olab.convert.json(COLLECT(path)) AS graphData
+// 分析环路
+CALL olab.schema.loop(graphData) YIELD loopResultList WITH loopResultList
+UNWIND loopResultList AS idsSeqLoopGraph
+// 环路子图加载【对每个环路序列生成一个原子性ID，在生成虚拟图时使用】
+WITH olab.schema.loop.cypher(idsSeqLoopGraph) AS cypher,idsSeqLoopGraph,olab.schema.atomic.id() AS atomicId
+// 运行环路查询CYPHER
+CALL apoc.cypher.run(cypher,null) YIELD value WITH value.path AS path,idsSeqLoopGraph,atomicId
+WITH RELATIONSHIPS(path) AS relList,idsSeqLoopGraph,atomicId
+UNWIND relList AS relationship
+// 将环路解析为一个虚拟路径【将一个path解析为一个虚拟path】
+CALL olab.schema.loop.vpath(relationship,idsSeqLoopGraph,atomicId) YIELD from,rel,to WITH (from)-[rel]->(to) AS path,idsSeqLoopGraph,atomicId
+// 输出环路，以及环路ID序列，该环路节点ID序列的原子性标记ID
+RETURN COLLECT(path) AS vLoopGraph,idsSeqLoopGraph,atomicId
+```
+### 案例二
+- 原始图【十顶点】【四十四环路】
+```
+MATCH path=(n)--()--()--(n)--() RETURN path LIMIT 10
+```
+- 无向环路虚拟图
+```
+// 加载一个子图
+MATCH path=(n)--()--()--(n)--() WITH path LIMIT 10 WITH olab.convert.json(COLLECT(path)) AS graphData
+// 分析环路
+CALL olab.schema.loop(graphData) YIELD loopResultList WITH loopResultList
+UNWIND loopResultList AS idsSeqLoopGraph
+// 环路子图加载【对每个环路序列生成一个原子性ID，在生成虚拟图时使用】
+WITH olab.schema.loop.cypher(idsSeqLoopGraph) AS cypher,idsSeqLoopGraph,olab.schema.atomic.id() AS atomicId
+// 运行环路查询CYPHER
+CALL apoc.cypher.run(cypher,null) YIELD value WITH value.path AS path,idsSeqLoopGraph,atomicId
+WITH RELATIONSHIPS(path) AS relList,idsSeqLoopGraph,atomicId
+UNWIND relList AS relationship
+// 将环路解析为一个虚拟路径【将一个path解析为一个虚拟path】
+CALL olab.schema.loop.vpath(relationship,idsSeqLoopGraph,atomicId) YIELD from,rel,to WITH (from)-[rel]->(to) AS path,idsSeqLoopGraph,atomicId
+// 输出环路，以及环路ID序列，该环路节点ID序列的原子性标记ID
+RETURN COLLECT(path) AS vLoopGraph,idsSeqLoopGraph,atomicId
+```
+- 统计无向环路子图个数
+```
+// 加载一个子图
+MATCH path=(n)--()--()--(n)--() WITH path LIMIT 10 WITH olab.convert.json(COLLECT(path)) AS graphData
+// 分析环路
+CALL olab.schema.loop(graphData) YIELD loopResultList RETURN SIZE(loopResultList) AS subGraphSize
+```
+
+
 
 

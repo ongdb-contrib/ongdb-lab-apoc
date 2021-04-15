@@ -1,4 +1,4 @@
-package data.lab.ongdb.function;
+package data.lab.ongdb.path;
 /*
  *
  * Data Lab - graph database organization.
@@ -9,9 +9,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.neo4j.graphdb.*;
-import org.neo4j.procedure.*;
+import org.neo4j.procedure.Context;
+import org.neo4j.procedure.Description;
+import org.neo4j.procedure.Name;
+import org.neo4j.procedure.UserFunction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Yc-Ma
@@ -20,11 +24,21 @@ import java.util.*;
  * @date 2020/5/22 10:22
  */
 public class PathFilter {
+
     /**
      * 运行环境/上下文
      */
     @Context
     public GraphDatabaseService db;
+
+    private final static String GRAPH_DATA_NODES_FIELD = "nodes";
+    private final static String GRAPH_DATA_RELATIONSHIPS_FIELD = "relationships";
+    private final static String ID = "id";
+    private final static String START_NODE = "startNode";
+    private final static String TYPE = "type";
+    private final static String END_END = "endNode";
+    private final static String PROPERTIES = "properties";
+    private final static String LABELS = "labels";
 
     /**
      * @param pathList:COLLECT(p) AS pathList
@@ -136,16 +150,59 @@ public class PathFilter {
     @UserFunction(name = "olab.convert.json")
     @Description("CONVERT JSON")
     public String convertJson(@Name("object") Object object) {
+
+        /*
+         * 解析节点
+         * */
         if (object instanceof Node) {
             return packNode((Node) object).toJSONString();
-        } else if (object instanceof Path) {
-            return packPath((Path) object).toJSONString();
-        } else if (object instanceof Map) {
-            return JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
-        } else if (object instanceof List) {
-            return JSONArray.parseArray(JSON.toJSONString(object)).toJSONString();
         }
-        return "";
+
+        /*
+         * 解析关系
+         * */
+        if (object instanceof Relationship) {
+            return packRelation((Relationship) object).toJSONString();
+        }
+
+        /*
+         * 解析路径
+         * */
+        if (object instanceof Path) {
+            return packPath((Path) object).toJSONString();
+        }
+
+        /*
+         * 解析MAP
+         * */
+        if (object instanceof Map) {
+            return JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
+        }
+
+        /*
+         * 解析List
+         * */
+        if (object instanceof List) {
+            JSONObject graph = new JSONObject();
+            JSONArray relationships = new JSONArray();
+            JSONArray nodes = new JSONArray();
+            List<Object> objectList = (List<Object>) object;
+            for (Object obj : objectList) {
+                if (obj instanceof Path) {
+                    JSONObject objectPath = packPath((Path) obj);
+                    nodes.addAll(objectPath.getJSONArray(GRAPH_DATA_NODES_FIELD));
+                    relationships.addAll(objectPath.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD));
+                } else {
+                    return JSONArray.parseArray(JSON.toJSONString(object)).toJSONString();
+                }
+            }
+            if (!relationships.isEmpty() || !nodes.isEmpty()) {
+                graph.put(GRAPH_DATA_RELATIONSHIPS_FIELD, relationships.parallelStream().distinct().collect(Collectors.toCollection(JSONArray::new)));
+                graph.put(GRAPH_DATA_NODES_FIELD, nodes.parallelStream().distinct().collect(Collectors.toCollection(JSONArray::new)));
+                return graph.toJSONString();
+            }
+        }
+        return null;
     }
 
     private static JSONObject packPath(Path path) {
@@ -167,8 +224,8 @@ public class PathFilter {
                 relationships.add(relationObj);
             }
         });
-        graph.put("relationships", relationships);
-        graph.put("nodes", nodes);
+        graph.put(GRAPH_DATA_RELATIONSHIPS_FIELD, relationships);
+        graph.put(GRAPH_DATA_NODES_FIELD, nodes);
         return graph;
     }
 
@@ -182,11 +239,11 @@ public class PathFilter {
 
     private static JSONObject packRelation(Relationship relationship) {
         JSONObject currentRelation = new JSONObject();
-        currentRelation.put("startNode", relationship.getStartNodeId());
-        currentRelation.put("id", relationship.getId());
-        currentRelation.put("type", relationship.getType().name());
-        currentRelation.put("endNode", relationship.getEndNodeId());
-        currentRelation.put("properties", JSONObject.parseObject(JSON.toJSONString(relationship.getAllProperties())));
+        currentRelation.put(START_NODE, relationship.getStartNodeId());
+        currentRelation.put(ID, relationship.getId());
+        currentRelation.put(TYPE, relationship.getType().name());
+        currentRelation.put(END_END, relationship.getEndNodeId());
+        currentRelation.put(PROPERTIES, JSONObject.parseObject(JSON.toJSONString(relationship.getAllProperties())));
         return currentRelation;
     }
 
@@ -200,13 +257,13 @@ public class PathFilter {
 
     private static JSONObject packNode(Node node) {
         JSONObject currentNode = new JSONObject();
-        currentNode.put("id", node.getId());
-        currentNode.put("properties", JSONObject.parseObject(JSON.toJSONString(node.getAllProperties())));
+        currentNode.put(ID, node.getId());
+        currentNode.put(PROPERTIES, JSONObject.parseObject(JSON.toJSONString(node.getAllProperties())));
 
         ArrayList labelList = new ArrayList();
         Iterable<Label> iterable = node.getLabels();
         iterable.forEach(label -> labelList.add(label.name()));
-        currentNode.put("labels", JSONArray.parseArray(JSON.toJSONString(labelList)));
+        currentNode.put(LABELS, JSONArray.parseArray(JSON.toJSONString(labelList)));
 
         return currentNode;
     }
@@ -230,6 +287,5 @@ public class PathFilter {
         }
         return false;
     }
-
 }
 

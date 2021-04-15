@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  */
 public class FulltextIndex {
 
-    private static final String tokenFilter = "data.lab.ongdb.wltea.analyzer.lucene.IKAnalyzer";
+    private static final String tokenFilter = "data.lab.wltea.analyzer.lucene.IKAnalyzer";
 
     // 提供支持索引自动更新的类使用
     protected static final Map<String, String> FULL_INDEX_CONFIG = MapUtil

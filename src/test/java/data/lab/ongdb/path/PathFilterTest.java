@@ -1,9 +1,10 @@
-package data.lab.ongdb.function;
+package data.lab.ongdb.path;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Result;
 import org.neo4j.harness.junit.Neo4jRule;
 
@@ -38,11 +39,17 @@ public class PathFilterTest {
     @Rule
     public Neo4jRule neo4j = new Neo4jRule().withFunction(PathFilter.class);
 
+    @Rule
+    public Neo4jRule neo4jProc = new Neo4jRule().withProcedure(PathFilter.class);
+
     GraphDatabaseService db ;
 
     @Before
     public void setUp() throws Exception {
         db= neo4j.getGraphDatabaseService();
+        /*
+        * 创建测试数据
+        * */
         db.execute(OPERATOR_GRAPH_CYPHER);
     }
 

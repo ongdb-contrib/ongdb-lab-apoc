@@ -19,4 +19,10 @@ public class VirtualPathResult {
         this.rel = rel;
         this.to = to;
     }
+
+    public VirtualPathResult(VirtualNode from, VirtualRelationship rel, VirtualNode to) {
+        this.from = from;
+        this.rel = rel;
+        this.to = to;
+    }
 }
