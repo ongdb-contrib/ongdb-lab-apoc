@@ -402,7 +402,7 @@ public class AutoCypherTest {
                 "  }\n" +
                 "}";
         // 入参JSON【暂不支持属性间布尔或条件】
-        autoCypher.cypher(JSON_01, 0, 50);
+        autoCypher.cypher(JSON_01,  50);
 
     }
 
