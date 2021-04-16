@@ -526,10 +526,24 @@ public class AutoCypher {
      * @Description: TODO(节点过滤CYPHER生成)
      */
     private String nodeCypher(JSONObject nodeObject, long limit) {
-        String templateProFilter = "MATCH (n:{Label}) WHERE {proFilter} RETURN n LIMIT " + limit;
-        String templateEsFilter = "MATCH (n:{Label}) WHERE {esFilter} RETURN n LIMIT " + limit;
-        String templateProEsFilter = "MATCH (n:{Label}) WHERE {proEsFilter} RETURN n LIMIT " + limit;
-        return null;
+        String label = nodeObject.getJSONArray("labels").getString(0);
+        String properties_filter = propertiesFilter(nodeObject.getJSONArray("properties_filter"));
+        // custom.es.result.bool({es-url},{index-name},{query-dsl})
+        String es_filter = esFilter(nodeObject.getJSONArray("es_filter"));
+        if ("".equals(es_filter)) {
+            return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n LIMIT " + limit;
+        }
+        if ("".equals(properties_filter)) {
+            return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n LIMIT " + limit;
+        }
+        return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n LIMIT " + limit;
+    }
+
+    private String propertiesFilter(JSONArray properties_filter) {
+        if (properties_filter != null && !properties_filter.isEmpty()) {
+
+        }
+        return "";
     }
 
     /**
