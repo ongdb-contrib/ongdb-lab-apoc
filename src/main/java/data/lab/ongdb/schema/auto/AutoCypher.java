@@ -53,6 +53,7 @@ public class AutoCypher {
     private final static String GRAPH_DATA_RELATIONSHIPS_FIELD = "relationships";
     private final static String ID = "id";
     private final static String PATH_REL_JOINT = "->";
+    private final static String CYPHER_JOINT = "UNION ALL";
 
     /**
      * @param json: "{"graph":{"nodes":[{"id":"-1024"},{"id":"-70549398"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"}]}}"
@@ -406,7 +407,6 @@ public class AutoCypher {
      *                   #############
      *                   ES过滤器(es_filter)：
      *                   ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
-     * @param skip:翻页参数
      * @param limit:限制参数
      * @return
      * @Description: TODO
@@ -441,103 +441,96 @@ public class AutoCypher {
             "    过滤器设计：传入查询碎片直接拼接查询碎片\n" +
             "输出：拼接好的CYPHER语句\n" +
             "```")
-    public String cypher(@Name("json") String json, @Name("skip") long skip, @Name("limit") long limit) {
-
-        JSONObject paras = JSONObject.parseObject(json);
-        JSONArray nodes = paras.getJSONObject("graph").getJSONArray("nodes");
-        JSONArray relationships = paras.getJSONObject("graph").getJSONArray("relationships");
+    public String cypher(@Name("json") String json, @Name(value = "limit", defaultValue = "100") long limit) {
 
         /*
-         * 转换图结构为矩阵寻找所有子图路径：
+         * 是否只包含节点：
+         *   是：封装节点的查询【多个节点返回UNION ALL语句】
+         *   否：是否既包含孤立节点也包含路径：
+         *       是：返回报错信息
+         *       否：所有节点都有路径则按照路径逻辑生成查询
+         *           生成路径查询：
+         *                   1.找到单路径节点作为顶点；
+         *                   2、获取不重叠路径；
+         *                   3、最长路径放在CYPHER第一层，由此类推；
+         *                   4、输出按照节点的索引序号【可选是否获取对应指标】
          * */
-        // 生成虚拟节点ID-使用INDEX替换
-        HashMap<String, HashMap<Long, Long>> idMap = transferNodeIndex(nodes);
-        HashMap<Long, Long> nodeIndex = idMap.get(ID_MAP_TO_VID);
-        HashMap<Long, Long> indexNode = idMap.get(VID_MAP_TO_ID);
-
-        // 虚拟节点数据增加到关系数据-使用INDEX替换关系中节点ID
-        JSONArray transferRelations = transferRelations(nodeIndex, relationships);
-
-        // 分析路径
-        // 初始化矩阵
-        int initVertex = nodeIndex.size();
-        int[][] relationsMatrix = initRelationsMatrix(transferRelations, initVertex);
-        AdjacencyNode[] adjacencyNodes = initAdjacencyMatrix(relationsMatrix);
-
-        AllPaths allPaths = new AllPaths(relationsMatrix.length);
-        allPaths.initGraphAdjacencyList(adjacencyNodes);
-
-        // 开始搜索所有路径
-        // 两两之间的所有路径寻找
-        List<String> graphPaths = new ArrayList<>();
-        ArrayList<Long> analysisNodeIds = nodes.stream().map(v -> {
-            JSONObject obj = (JSONObject) v;
-            return obj.getLongValue("id");
-        }).collect(Collectors.toCollection(ArrayList::new));
-        for (long i = 0; i < analysisNodeIds.size(); i++) {
-            for (long j = i + 1; j < analysisNodeIds.size(); j++) {
-                long startIndex = nodeIndex.get(analysisNodeIds.get(Math.toIntExact(i)));
-                long endIndex = nodeIndex.get(analysisNodeIds.get(Math.toIntExact(j)));
-                // BEGIN SEARCH SUB-GRAPH ALL PATHS
-                if (startIndex != endIndex) {
-                    allPaths.allPaths(Math.toIntExact(startIndex), Math.toIntExact(endIndex));
-                    graphPaths.addAll(allPaths.getAllPathsStr());
-                }
-            }
+        /*
+         * v1.0实现CYPHER的自动生成
+         * */
+        if (Objects.isNull(json) || "".equals(json)) {
+            return null;
         }
-        // 获取所有路径
-        System.out.println(graphPaths.size());
+        JSONObject paras = JSONObject.parseObject(json);
+        if (!paras.containsKey(GRAPH_DATA_FIELD) && paras.containsKey(GRAPH_DATA_NODES_FIELD) && paras.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
+            JSONObject paraObj = new JSONObject();
+            paraObj.put(GRAPH_DATA_FIELD, paras);
+            paras = paraObj;
+        } else if (!paras.containsKey(GRAPH_DATA_FIELD)) {
+            throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_FIELD + " field!");
+        }
+        JSONObject graphData = paras.getJSONObject(GRAPH_DATA_FIELD);
+
+        if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
+            throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
+        }
+        JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
+        JSONArray relationships = graphData.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD);
+        if (relationships == null || relationships.isEmpty()) {
+            // 单节点拼接
+            return cypherAppendJustNodes(nodes, limit);
+        } else {
+            return cypherAppendNotJustNodes();
+        }
+    }
+
+    private String cypherAppendNotJustNodes() {
         return null;
     }
 
-//    public String cypher(@Name("json") String json, @Name("skip") long skip, @Name("limit") long limit) {
-//
-//        JSONObject paras = JSONObject.parseObject(json);
-//        JSONArray nodes = paras.getJSONObject("graph").getJSONArray("nodes");
-//        JSONArray relationships = paras.getJSONObject("graph").getJSONArray("relationships");
-//
-//        /*
-//         * 转换图结构为矩阵寻找所有子图路径：
-//         * */
-//        // 生成虚拟节点ID-使用INDEX替换
-//        HashMap<String, HashMap<Long, Long>> idMap = transferNodeIndex(nodes);
-//        HashMap<Long, Long> nodeIndex = idMap.get(ID_MAP_TO_VID);
-//        HashMap<Long, Long> indexNode = idMap.get(VID_MAP_TO_ID);
-//
-//        // 虚拟节点数据增加到关系数据-使用INDEX替换关系中节点ID
-//        JSONArray transferRelations = transferRelations(nodeIndex, relationships);
-//
-//        // 分析路径
-//        // 初始化矩阵
-//        int initVertex = nodeIndex.size();
-//        int[][] relationsMatrix = initRelationsMatrix(transferRelations, initVertex);
-//        AdjacencyNode[] adjacencyNodes = initAdjacencyMatrix(relationsMatrix);
-//
-//        AllPaths allPaths = new AllPaths(relationsMatrix.length);
-//        allPaths.initGraphAdjacencyList(adjacencyNodes);
-//
-//        // 开始搜索所有路径
-//        // 两两之间的所有短路径寻找(JUST ONE SHORTEST PATH)
-//        List<String> graphPaths = new ArrayList<>();
-//        ArrayList<Long> analysisNodeIds = nodes.stream().map(v -> {
-//            JSONObject obj = (JSONObject) v;
-//            return obj.getLongValue("id");
-//        }).collect(Collectors.toCollection(ArrayList::new));
-//        for (long i = 0; i < analysisNodeIds.size(); i++) {
-//            for (long j = i + 1; j < analysisNodeIds.size(); j++) {
-//                long startIndex = nodeIndex.get(analysisNodeIds.get(Math.toIntExact(i)));
-//                long endIndex = nodeIndex.get(analysisNodeIds.get(Math.toIntExact(j)));
-//                // BEGIN SEARCH SUB-GRAPH ALL PATHS
-//                if (startIndex != endIndex) {
-//                    allPaths.allPaths(Math.toIntExact(startIndex), Math.toIntExact(endIndex));
-//                    graphPaths.addAll(allPaths.getAllPathsStr());
-//                }
-//            }
-//        }
-//        // 获取所有路径
-//        System.out.println(graphPaths.size());
-//        return null;
-//    }
+    /**
+     * @param
+     * @return
+     * @Description: TODO(图模型只有节点)
+     */
+    private String cypherAppendJustNodes(JSONArray nodes, long limit) {
+        StringBuilder cypherBuilder = new StringBuilder();
+        long calLimit = calLimit(limit, nodes.size());
+        for (Object obj : nodes) {
+            JSONObject nObj = (JSONObject) obj;
+            String cypher = nodeCypher(nObj, calLimit);
+            cypherBuilder.append(cypher);
+            cypherBuilder.append(" \n");
+            cypherBuilder.append(CYPHER_JOINT);
+            cypherBuilder.append(" \n");
+        }
+        return null;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(确定限制参数)
+     */
+    private long calLimit(long limit, int size) {
+        if (limit < size) {
+            return 1;
+        } else {
+            return (long) Math.ceil(limit / size);
+        }
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(节点过滤CYPHER生成)
+     */
+    private String nodeCypher(JSONObject nodeObject, long limit) {
+        String templateProFilter = "MATCH (n:{Label}) WHERE {proFilter} RETURN n LIMIT " + limit;
+        String templateEsFilter = "MATCH (n:{Label}) WHERE {esFilter} RETURN n LIMIT " + limit;
+        String templateProEsFilter = "MATCH (n:{Label}) WHERE {proEsFilter} RETURN n LIMIT " + limit;
+        return null;
+    }
 
     /**
      * @param relationships:本次分析的关系图路径

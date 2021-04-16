@@ -323,14 +323,62 @@ public class AutoCypherTest {
                 "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
                 "          }\n" +
                 "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"joint\": \"AND\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"count>=0 AND count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
                 "      }\n" +
                 "    ],\n" +
                 "    \"relationships\": [\n" +
                 "      {\n" +
                 "        \"id\": \"-71148967\",\n" +
-                "        \"type\": \"非标违约\",\n" +
+                "        \"type\": \"拥有\",\n" +
                 "        \"startNode\": \"-1024\",\n" +
                 "        \"endNode\": \"-70549398\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"joint\": \"AND\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"count>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-11148067\",\n" +
+                "        \"type\": \"担保\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-1026\",\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
                 "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
@@ -356,6 +404,14 @@ public class AutoCypherTest {
         // 入参JSON【暂不支持属性间布尔或条件】
         autoCypher.cypher(JSON_01, 0, 50);
 
+    }
+
+    @Test
+    public void math() {
+        double dividend = 7;    // 被除数
+        double divisor = 2;        // 除数
+        long limit = (long) Math.ceil(dividend / divisor);
+        System.out.println(limit);
     }
 
     @Test
@@ -422,7 +478,7 @@ public class AutoCypherTest {
         Map<String, Object> hashMap = new HashMap<>();
         hashMap.put("ids", new Integer[]{2, 104, 4, 7, 0, 9, 2});
         // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
-        Result result = db.execute("RETURN olab.schema.loop.cypher({ids}) AS cypher", hashMap);
+        Result result = db.execute("RETURN olab.schema.loop.cypher({ids}) AS CYPHER", hashMap);
         String cypher = (String) result.next().get("cypher");
         System.out.println(cypher);
     }
@@ -430,7 +486,7 @@ public class AutoCypherTest {
     @Test
     public void atomicId() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
-        for (;;) {
+        for (; ; ) {
             Result result = db.execute("RETURN olab.schema.atomic.id() AS atomicId");
             Long cypher = (Long) result.next().get("atomicId");
             System.out.println(cypher);
