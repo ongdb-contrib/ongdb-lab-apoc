@@ -54,6 +54,12 @@ public class AutoCypher {
     private final static String ID = "id";
     private final static String PATH_REL_JOINT = "->";
     private final static String CYPHER_JOINT = "UNION ALL";
+    private final static String VAR_NAME = "{var}.";
+
+    /*
+     * 集群需要预安装此函数
+     * */
+    private final static String ES_RESULT_BOOL_FILTER = "custom.es.result.bool({es-url},{index-name},{query-dsl})";
 
     /**
      * @param json: "{"graph":{"nodes":[{"id":"-1024"},{"id":"-70549398"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"}]}}"
@@ -456,7 +462,7 @@ public class AutoCypher {
          *                   4、输出按照节点的索引序号【可选是否获取对应指标】
          * */
         /*
-         * v1.0实现CYPHER的自动生成
+         * v1.0实现CYPHER的自动生成，模式匹配到的子图使用graph对象返回【RETURN {graph:[path1,path2]} AS graph LIMIT 1】
          * */
         if (Objects.isNull(json) || "".equals(json)) {
             return null;
@@ -471,15 +477,18 @@ public class AutoCypher {
         }
         JSONObject graphData = paras.getJSONObject(GRAPH_DATA_FIELD);
 
-        if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
-            throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
-        }
         JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
         JSONArray relationships = graphData.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD);
         if (relationships == null || relationships.isEmpty()) {
+            if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD)) {
+                throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " field!");
+            }
             // 单节点拼接
             return cypherAppendJustNodes(nodes, limit);
         } else {
+            if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
+                throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
+            }
             return cypherAppendNotJustNodes();
         }
     }
@@ -504,7 +513,7 @@ public class AutoCypher {
             cypherBuilder.append(CYPHER_JOINT);
             cypherBuilder.append(" \n");
         }
-        return null;
+        return cypherBuilder.substring(0, cypherBuilder.length() - (CYPHER_JOINT.length() + 2));
     }
 
     /**
@@ -514,7 +523,7 @@ public class AutoCypher {
      */
     private long calLimit(long limit, int size) {
         if (limit < size) {
-            return 1;
+            return -1;
         } else {
             return (long) Math.ceil(limit / size);
         }
@@ -527,21 +536,60 @@ public class AutoCypher {
      */
     private String nodeCypher(JSONObject nodeObject, long limit) {
         String label = nodeObject.getJSONArray("labels").getString(0);
-        String properties_filter = propertiesFilter(nodeObject.getJSONArray("properties_filter"));
+        String properties_filter = propertiesFilter("n", nodeObject.getJSONArray("properties_filter"));
         // custom.es.result.bool({es-url},{index-name},{query-dsl})
         String es_filter = esFilter(nodeObject.getJSONArray("es_filter"));
         if ("".equals(es_filter)) {
-            return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n LIMIT " + limit;
+            if (limit > 0) {
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n LIMIT " + limit;
+            } else {
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n";
+            }
         }
         if ("".equals(properties_filter)) {
-            return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n LIMIT " + limit;
+            if (limit > 0) {
+                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n LIMIT " + limit;
+            } else {
+                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n";
+            }
         }
-        return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n LIMIT " + limit;
+        if (limit > 0) {
+            return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n LIMIT " + limit;
+        } else {
+            return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
+        }
     }
 
-    private String propertiesFilter(JSONArray properties_filter) {
-        if (properties_filter != null && !properties_filter.isEmpty()) {
+    private String esFilter(JSONArray es_filter) {
+        if (es_filter != null && !es_filter.isEmpty()) {
+            for (Object obj : es_filter) {
+                JSONObject object = (JSONObject) obj;
+                String esUrl = object.getString("es_url");
+                String indexName = object.getString("index_name");
+                String query = object.getString("query");
+                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query);
+            }
+        }
+        return "";
+    }
 
+    /**
+     * @param varName:变量名
+     * @param properties_filter:属性过滤条件
+     * @return
+     * @Description: TODO(拼接属性过滤条件)
+     */
+    private String propertiesFilter(String varName, JSONArray properties_filter) {
+        StringBuilder builder = new StringBuilder();
+        if (properties_filter != null && !properties_filter.isEmpty()) {
+            for (Object obj : properties_filter) {
+                JSONObject object = (JSONObject) obj;
+                for (String key : object.keySet()) {
+                    builder.append(object.getString(key).replace(VAR_NAME, varName + "."));
+                    builder.append(" AND ");
+                }
+            }
+            return builder.substring(0, builder.length() - 5);
         }
         return "";
     }

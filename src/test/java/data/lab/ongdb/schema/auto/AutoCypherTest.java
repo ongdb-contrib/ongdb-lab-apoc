@@ -265,9 +265,11 @@ public class AutoCypherTest {
             "}";
 
     @Test
-    public void cypher() {
+    public void autoNodeCypher() {
         AutoCypher autoCypher = new AutoCypher();
-        String json = "{\n" +
+        // 入参JSON【暂不支持属性间布尔或条件】
+        // 只有节点
+        String just_node_json="{\n" +
                 "  \"graph\": {\n" +
                 "    \"nodes\": [\n" +
                 "      {\n" +
@@ -277,13 +279,10 @@ public class AutoCypherTest {
                 "        ],\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
-                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"joint\": \"AND\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"count\": \"count>=0 AND count<=10\"\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
                 "          }\n" +
                 "        ],\n" +
                 "        \"es_filter\": [\n" +
@@ -301,19 +300,13 @@ public class AutoCypherTest {
                 "        ],\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
-                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"joint\": \"AND\"\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"count\": \"count>=0 AND count<=10\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"joint\": \"AND\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"num\": \"num>=0\"\n" +
+                "            \"num\": \"{var}.num>=0\"\n" +
                 "          }\n" +
                 "        ],\n" +
                 "        \"es_filter\": [\n" +
@@ -331,13 +324,191 @@ public class AutoCypherTest {
                 "        ],\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
-                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"joint\": \"AND\"\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        String just_node_json_just_pro="{\n" +
+                "  \"graph\": {\n" +
+                "    \"nodes\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-1024\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"count\": \"count>=0 AND count<=10\"\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-70549398\",\n" +
+                "        \"labels\": [\n" +
+                "          \"品牌\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"num\": \"{var}.num>=0\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        String just_node_json_just_es="{\n" +
+                "  \"graph\": {\n" +
+                "    \"nodes\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-1024\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-70549398\",\n" +
+                "        \"labels\": [\n" +
+                "          \"品牌\"\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+
+        String cypher = autoCypher.cypher(just_node_json,  -1);
+        String cypher1 = autoCypher.cypher(just_node_json_just_es,  -1);
+        String cypher2 = autoCypher.cypher(just_node_json_just_pro,  -1);
+        System.out.println(cypher+"\n");
+        System.out.println(cypher1+"\n");
+        System.out.println(cypher2+"\n");
+    }
+
+    @Test
+    public void autoRelCypher() {
+        AutoCypher autoCypher = new AutoCypher();
+        // 入参JSON【暂不支持属性间布尔或条件】
+        String just_rel_json="{\n" +
+                "  \"graph\": {\n" +
+                "    \"nodes\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-1024\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-70549398\",\n" +
+                "        \"labels\": [\n" +
+                "          \"品牌\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"num\": \"{var}.num>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
                 "          }\n" +
                 "        ],\n" +
                 "        \"es_filter\": [\n" +
@@ -357,13 +528,10 @@ public class AutoCypherTest {
                 "        \"endNode\": \"-70549398\",\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
-                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"joint\": \"AND\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"count\": \"count>=0\"\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
                 "          }\n" +
                 "        ],\n" +
                 "        \"es_filter\": [\n" +
@@ -381,13 +549,10 @@ public class AutoCypherTest {
                 "        \"endNode\": \"-1026\",\n" +
                 "        \"properties_filter\": [\n" +
                 "          {\n" +
-                "            \"hcreatetime\": \"hcreatetime='20201116032333'\"\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
                 "          },\n" +
                 "          {\n" +
-                "            \"joint\": \"AND\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"count\": \"count>=0\"\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
                 "          }\n" +
                 "        ],\n" +
                 "        \"es_filter\": [\n" +
@@ -401,9 +566,166 @@ public class AutoCypherTest {
                 "    ]\n" +
                 "  }\n" +
                 "}";
-        // 入参JSON【暂不支持属性间布尔或条件】
-        autoCypher.cypher(JSON_01,  50);
-
+        String just_rel_json_just_es="{\n" +
+                "  \"graph\": {\n" +
+                "    \"nodes\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-1024\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-70549398\",\n" +
+                "        \"labels\": [\n" +
+                "          \"品牌\"\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"relationships\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-71148967\",\n" +
+                "        \"type\": \"拥有\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-70549398\",\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-11148067\",\n" +
+                "        \"type\": \"担保\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-1026\",\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{product_code:\\\"PF0020020104\\\"}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        String just_rel_json_just_pro="{\n" +
+                "  \"graph\": {\n" +
+                "    \"nodes\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-1024\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-70549398\",\n" +
+                "        \"labels\": [\n" +
+                "          \"品牌\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"num\": \"{var}.num>=0\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"relationships\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-71148967\",\n" +
+                "        \"type\": \"拥有\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-70549398\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-11148067\",\n" +
+                "        \"type\": \"担保\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-1026\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        String cypher = autoCypher.cypher(just_rel_json,  -1);
+        String cypher1 = autoCypher.cypher(just_rel_json_just_es,  -1);
+        String cypher2 = autoCypher.cypher(just_rel_json_just_pro,  -1);
+        System.out.println(cypher+"\n");
+        System.out.println(cypher1+"\n");
+        System.out.println(cypher2+"\n");
     }
 
     @Test
