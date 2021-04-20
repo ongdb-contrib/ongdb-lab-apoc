@@ -720,9 +720,214 @@ public class AutoCypherTest {
                 "    ]\n" +
                 "  }\n" +
                 "}";
+        String multi_just_rel_json="{\n" +
+                "  \"graph\": {\n" +
+                "    \"nodes\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-1024\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-70549398\",\n" +
+                "        \"labels\": [\n" +
+                "          \"品牌\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"num\": \"{var}.num>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1026\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1029\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-1030\",\n" +
+                "        \"labels\": [\n" +
+                "          \"公司\"\n" +
+                "        ],\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0 AND {var}.count<=10\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"relationships\": [\n" +
+                "      {\n" +
+                "        \"id\": \"-71148967\",\n" +
+                "        \"type\": \"拥有\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-70549398\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-11148067\",\n" +
+                "        \"type\": \"担保\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-1026\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-11148067\",\n" +
+                "        \"type\": \"担保\",\n" +
+                "        \"startNode\": \"-1026\",\n" +
+                "        \"endNode\": \"-1029\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"id\": \"-11148067\",\n" +
+                "        \"type\": \"担保\",\n" +
+                "        \"startNode\": \"-1024\",\n" +
+                "        \"endNode\": \"-1030\",\n" +
+                "        \"properties_filter\": [\n" +
+                "          {\n" +
+                "            \"hcreatetime\": \"{var}.hcreatetime='20201116032333'\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"count\": \"{var}.count>=0\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"es_filter\": [\n" +
+                "          {\n" +
+                "            \"es_url\": \"10.20.13.130:9200\",\n" +
+                "            \"index_name\": \"index_name_1\",\n" +
+                "            \"query\": \"{size:1,query:{term:{entity_unique_code:{var}}}}}\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "\n";
+        String cypher_01 = autoCypher.cypher(multi_just_rel_json,  -1);
         String cypher = autoCypher.cypher(just_rel_json,  -1);
         String cypher1 = autoCypher.cypher(just_rel_json_just_es,  -1);
         String cypher2 = autoCypher.cypher(just_rel_json_just_pro,  -1);
+        System.out.println(cypher_01+"\n");
         System.out.println(cypher+"\n");
         System.out.println(cypher1+"\n");
         System.out.println(cypher2+"\n");

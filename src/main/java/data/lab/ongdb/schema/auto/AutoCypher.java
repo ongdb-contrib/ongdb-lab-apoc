@@ -54,12 +54,16 @@ public class AutoCypher {
     private final static String ID = "id";
     private final static String PATH_REL_JOINT = "->";
     private final static String CYPHER_JOINT = "UNION ALL";
-    private final static String VAR_NAME = "{var}.";
+    private final static String START_NODE = "startNode";
+    private final static String END_NODE = "endNode";
+    private final static String TYPE = "type";
+    private final static String LABELS = "labels";
 
     /*
-     * 集群需要预安装此函数
+     * 过滤器
      * */
-    private final static String ES_RESULT_BOOL_FILTER = "custom.es.result.bool({es-url},{index-name},{query-dsl})";
+    private final static String PROPERTIES_FILTER = "properties_filter";
+    private final static String ES_FILTER = "es_filter";
 
     /**
      * @param json: "{"graph":{"nodes":[{"id":"-1024"},{"id":"-70549398"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"}]}}"
@@ -247,8 +251,29 @@ public class AutoCypher {
     }
 
     /**
+     * @param graphPaths:STRING类型路径列表
+     * @param indexNode:索引与节点的ID对应关系
+     * @param directionListMap:方向对应关系    包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
+     * @param idToLabel:索引节点ID对应的节点标签MAP
+     * @param nodeIndex:节点ID和索引ID对应关系
+     * @param filterNodeMap:属性过滤器
+     * @return
+     * @Description: TODO(拿到路径列表 - 并将索引ID替换为节点ID)
+     */
+    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+        /*
+         * 拿到路径列表-并将索引ID替换为节点ID
+         * */
+        return graphPaths
+                .parallelStream()
+                .map(v -> new LoopResult(v, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * @param analysisNodeIds:两两定点求全路径的顶点列表
      * @param relationships:关系集
+     * @param nodeIndex:节点和索引的对应关系
      * @return
      * @Description: TODO(获取路径串)
      */
@@ -291,6 +316,10 @@ public class AutoCypher {
                      * */
                     allPaths.allPaths(Math.toIntExact(endIndex), Math.toIntExact(startIndex));
                     graphPaths.addAll(allPaths.getAllPathsStr());
+                    /*
+                     * 清空反向搜索的结果集
+                     * */
+                    allPaths.clear();
                 }
             }
         }
@@ -489,12 +518,150 @@ public class AutoCypher {
             if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
             }
-            return cypherAppendNotJustNodes();
+            return cypherAppendNotJustNodes(graphData);
         }
     }
 
-    private String cypherAppendNotJustNodes() {
+    /**
+     * @param graphData:图对象
+     * @return
+     * @Description: TODO(图对象转换为CYPHER语句)
+     */
+    private String cypherAppendNotJustNodes(JSONObject graphData) {
+        /*
+         * 1、确定顶点【一度连边顶点】
+         * 2、检测graphData是一个连通图【求弱连通分量】
+         * 3、找到所有路径
+         * 4、排除重复路径【主要是正序与逆序路径】
+         * 5、拼接路径【拼接优先级：路径越长越优先；过滤条件越多越优先】
+         * 6、返回对象【graph为满足该图模式的子图】：RETURN {graph:[path1,path2...]} AS graph LIMIT 1
+         * */
+        /*
+         * 过滤出顶点集合
+         * */
+        ArrayList<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
+
+        /*
+         * 转换图结构为矩阵寻找所有子图路径：
+         * */
+        // 生成虚拟节点ID-使用INDEX替换
+        JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
+        HashMap<String, HashMap<Long, Long>> idMap = transferNodeIndex(nodes);
+        HashMap<Long, Long> nodeIndex = idMap.get(ID_MAP_TO_VID);
+        HashMap<Long, Long> indexNode = idMap.get(VID_MAP_TO_ID);
+
+
+        JSONArray relationships = graphData.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD);
+
+        /*
+         * 当前图的所有路径集合【如果发现不是连通图则报错】
+         * */
+        List<String> graphPaths = getGraphPathsWcc(analysisNodeIds, relationships, nodeIndex);
+
+        List<Map<String, Object>> directionListMap = relationships.stream()
+                .map(v -> {
+                    JSONObject obj = (JSONObject) v;
+                    Map<String, Object> map = new HashMap<>();
+                    map.put(START_NODE, obj.getString(START_NODE));
+                    map.put(END_NODE, obj.getString(END_NODE));
+                    map.put(TYPE, obj.getString(TYPE));
+                    map.put(PROPERTIES_FILTER, obj.getJSONArray(PROPERTIES_FILTER));
+                    map.put(ES_FILTER, obj.getJSONArray(ES_FILTER));
+                    return map;
+                }).collect(Collectors.toList());
+        Map<Long, String> idToLabel = new HashMap<>();
+        Map<Long, JSONObject> filterNodeMap = new HashMap<>();
+        for (long i = 0; i < nodes.size(); i++) {
+            JSONObject node = nodes.getJSONObject(Math.toIntExact(i));
+            idToLabel.put(i, node.getJSONArray(LABELS).getString(0));
+            JSONObject object = new JSONObject();
+            object.put(PROPERTIES_FILTER, node.getJSONArray(PROPERTIES_FILTER));
+            object.put(ES_FILTER, node.getJSONArray(ES_FILTER));
+            filterNodeMap.put(i, object);
+        }
+        List<LoopResult> graphNodeIdSeqPaths = replaceIndexId(graphPaths, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+
         return null;
+    }
+
+    /**
+     * @param analysisNodeIds:两两定点求全路径的顶点列表
+     * @param relationships:关系集
+     * @param nodeIndex:节点和索引的对应关系
+     * @return
+     * @Description: TODO(获取路径串 【 如果发现不是连通图则报错 】)
+     */
+    private List<String> getGraphPathsWcc(ArrayList<Long> analysisNodeIds, JSONArray relationships, HashMap<Long, Long> nodeIndex) {
+        // 虚拟节点数据增加到关系数据-使用INDEX替换关系中节点ID
+        JSONArray transferRelations = transferRelations(nodeIndex, relationships);
+
+        // 分析路径
+        // 初始化矩阵
+        int initVertex = nodeIndex.size();
+        int[][] relationsMatrix = initRelationsMatrix(transferRelations, initVertex);
+        // 定义节点的邻接表
+        AdjacencyNode[] adjacencyNodes = initAdjacencyMatrix(relationsMatrix);
+
+        // 初始化图邻接表
+        AllPaths allPaths = new AllPaths(relationsMatrix.length);
+        allPaths.initGraphAdjacencyList(adjacencyNodes);
+
+        // 开始搜索所有路径
+        // 顶点之间的所有路径寻找
+        List<String> graphPaths = new ArrayList<>();
+        for (long i = 0; i < analysisNodeIds.size(); i++) {
+            for (long j = i + 1; j < analysisNodeIds.size(); j++) {
+                long startIndex = nodeIndex.get(analysisNodeIds.get(Math.toIntExact(i)));
+                long endIndex = nodeIndex.get(analysisNodeIds.get(Math.toIntExact(j)));
+                // BEGIN SEARCH SUB-GRAPH ALL PATHS
+                if (startIndex != endIndex) {
+                    /*
+                     * 正向搜索
+                     * */
+                    allPaths.allPaths(Math.toIntExact(startIndex), Math.toIntExact(endIndex));
+                    if (!allPaths.getAllPathsStr().isEmpty()) {
+                        graphPaths.addAll(allPaths.getAllPathsStr());
+                    } else {
+                        throw new IllegalArgumentException("The graph is not a weakly connected graph!");
+                    }
+                    /*
+                     * 清空正向搜索的结果集
+                     * */
+                    allPaths.clear();
+                }
+            }
+        }
+        return graphPaths;
+    }
+
+    /**
+     * @param graphData:图对象
+     * @return
+     * @Description: TODO(找到一度连边顶点)
+     */
+    private ArrayList<Long> filterAnalysisNodeIds(JSONObject graphData) {
+        ArrayList<Long> analysisNodeIds = new ArrayList<>();
+        JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
+        JSONArray relationships = graphData.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD);
+        for (Object obj : nodes) {
+            JSONObject object = (JSONObject) obj;
+            long id = object.getLongValue(ID);
+            int relCount = 0;
+            for (Object objRel : relationships) {
+                JSONObject objectRel = (JSONObject) objRel;
+                long startNode = objectRel.getLongValue(START_NODE);
+                long endNode = objectRel.getLongValue(END_NODE);
+                if (startNode == id || endNode == id) {
+                    relCount++;
+                }
+            }
+            if (relCount == 0) {
+                throw new IllegalArgumentException("The GraphData contains isolated nodes!");
+            } else if (relCount == 1) {
+                analysisNodeIds.add(id);
+            }
+        }
+        return analysisNodeIds;
     }
 
     /**
@@ -536,9 +703,9 @@ public class AutoCypher {
      */
     private String nodeCypher(JSONObject nodeObject, long limit) {
         String label = nodeObject.getJSONArray("labels").getString(0);
-        String properties_filter = propertiesFilter("n", nodeObject.getJSONArray("properties_filter"));
+        String properties_filter = FilterUtil.propertiesFilter("n", nodeObject.getJSONArray("properties_filter"));
         // custom.es.result.bool({es-url},{index-name},{query-dsl})
-        String es_filter = esFilter(nodeObject.getJSONArray("es_filter"));
+        String es_filter = FilterUtil.esFilter("n", nodeObject.getJSONArray("es_filter"));
         if ("".equals(es_filter)) {
             if (limit > 0) {
                 return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n LIMIT " + limit;
@@ -558,40 +725,6 @@ public class AutoCypher {
         } else {
             return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
         }
-    }
-
-    private String esFilter(JSONArray es_filter) {
-        if (es_filter != null && !es_filter.isEmpty()) {
-            for (Object obj : es_filter) {
-                JSONObject object = (JSONObject) obj;
-                String esUrl = object.getString("es_url");
-                String indexName = object.getString("index_name");
-                String query = object.getString("query");
-                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query);
-            }
-        }
-        return "";
-    }
-
-    /**
-     * @param varName:变量名
-     * @param properties_filter:属性过滤条件
-     * @return
-     * @Description: TODO(拼接属性过滤条件)
-     */
-    private String propertiesFilter(String varName, JSONArray properties_filter) {
-        StringBuilder builder = new StringBuilder();
-        if (properties_filter != null && !properties_filter.isEmpty()) {
-            for (Object obj : properties_filter) {
-                JSONObject object = (JSONObject) obj;
-                for (String key : object.keySet()) {
-                    builder.append(object.getString(key).replace(VAR_NAME, varName + "."));
-                    builder.append(" AND ");
-                }
-            }
-            return builder.substring(0, builder.length() - 5);
-        }
-        return "";
     }
 
     /**
@@ -656,13 +789,13 @@ public class AutoCypher {
         nodes = nodes.parallelStream().sorted((v1, v2) -> {
             JSONObject object1 = (JSONObject) v1;
             JSONObject object2 = (JSONObject) v2;
-            return object1.getInteger("id") - object2.getInteger("id");
+            return object1.getInteger(ID) - object2.getInteger(ID);
         }).collect(Collectors.toCollection(JSONArray::new));
 
         for (long i = 0; i < nodes.size(); i++) {
             JSONObject node = nodes.getJSONObject(Math.toIntExact(i));
-            nodeIndex.put(node.getLongValue("id"), i);
-            indexNode.put(i, node.getLongValue("id"));
+            nodeIndex.put(node.getLongValue(ID), i);
+            indexNode.put(i, node.getLongValue(ID));
         }
         idsMap.put(ID_MAP_TO_VID, nodeIndex);
         idsMap.put(VID_MAP_TO_ID, indexNode);
@@ -673,8 +806,8 @@ public class AutoCypher {
         return relationships.parallelStream()
                 .map(v -> {
                     JSONObject edge = (JSONObject) v;
-                    edge.put(START_V_IDX_ID, nodeIndex.get(edge.getLongValue("startNode")));
-                    edge.put(END_V_IDX_ID, nodeIndex.get(edge.getLongValue("endNode")));
+                    edge.put(START_V_IDX_ID, nodeIndex.get(edge.getLongValue(START_NODE)));
+                    edge.put(END_V_IDX_ID, nodeIndex.get(edge.getLongValue(END_NODE)));
                     return edge;
                 })
                 .collect(Collectors.toCollection(JSONArray::new));
