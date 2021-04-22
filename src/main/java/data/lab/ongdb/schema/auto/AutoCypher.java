@@ -614,7 +614,7 @@ public class AutoCypher {
          * */
         StringBuilder builder = new StringBuilder();
         StringBuilder pathParas = new StringBuilder();
-        List<String> withParasBuilder = new ArrayList<>();
+        StringBuilder withParasBuilder = new StringBuilder();
         int size = graphNodeIdSeqPathsSort.size();
         for (int i = 0; i < size; i++) {
             LoopResult loopResult = graphNodeIdSeqPathsSort.get(i);
@@ -630,9 +630,9 @@ public class AutoCypher {
              * 拼接`WITH`,提取变量
              * 准备RETURN GRAPH
              * */
-            withParasBuilder.add(jointParas(loopResult.getParaSeqList()) + "," + para);
-            String withPara = jointListParaStr(withParasBuilder);
-            withParasBuilder.add(",");
+            withParasBuilder.append(jointParas(loopResult.getParaSeqList()) + "," + para);
+            String withPara = jointDuplicationParas(withParasBuilder.toString());
+            withParasBuilder.append(",");
             builder.append(path.replace("RETURN " + para, "WITH " + withPara));
             builder.append("\n");
         }
@@ -641,6 +641,24 @@ public class AutoCypher {
          * 拼接序列中的CYPHER
          * */
         return builder.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(排重变量名称)
+     */
+    private String jointDuplicationParas(String paras) {
+        List<String> finalParas = Arrays.stream(paras.split(",")).distinct().collect(Collectors.toList());
+        StringBuilder parasStr = new StringBuilder();
+        int size = finalParas.size();
+        for (int i = 0; i < size; i++) {
+            parasStr.append(finalParas.get(i));
+            if (i < size - 1) {
+                parasStr.append(",");
+            }
+        }
+        return parasStr.toString();
     }
 
     /**
