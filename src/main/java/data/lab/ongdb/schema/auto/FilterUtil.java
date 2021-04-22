@@ -70,7 +70,7 @@ public class FilterUtil {
                 if (query == null || !query.contains("entity_unique_code:{var}")) {
                     throw new IllegalArgumentException("ES Filter error - Missing：{term:{entity_unique_code:{var}}}");
                 }
-                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query.replace("entity_unique_code:{var}","entity_unique_code:"+varName+".entity_unique_code"));
+                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query.replace("entity_unique_code:{var}", "entity_unique_code:'`+" + varName + ".entity_unique_code+`'"));
             }
         }
         return "";
@@ -89,6 +89,22 @@ public class FilterUtil {
         String proFilter = propertiesFilter(varName, propertiesFilter.getJSONArray(PROPERTIES_FILTER));
         String esFilter = esFilter(varName, propertiesFilter.getJSONArray(ES_FILTER));
         return appendFilter(proFilter, esFilter);
+    }
+
+    /**
+     * @param propertiesFilter:属性过滤条件
+     * @return
+     * @Description: TODO(属性过滤个数 - ES的query计算为一个过滤)
+     */
+    public static int propertiesFilter(JSONObject propertiesFilter) {
+        if (propertiesFilter == null || propertiesFilter.isEmpty()) {
+            return 0;
+        }
+        JSONArray propertiesFilterJSONArray = propertiesFilter.getJSONArray(PROPERTIES_FILTER);
+        JSONArray esFilterJArray = propertiesFilter.getJSONArray(ES_FILTER);
+        int proFilter = propertiesFilterJSONArray == null ? 0 : propertiesFilterJSONArray.size();
+        int esFilter = esFilterJArray == null ? 0 : esFilterJArray.size();
+        return proFilter + esFilter;
     }
 
     /**

@@ -518,7 +518,7 @@ public class AutoCypher {
             if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
             }
-            return cypherAppendNotJustNodes(graphData);
+            return cypherAppendNotJustNodes(graphData, limit);
         }
     }
 
@@ -527,7 +527,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO(图对象转换为CYPHER语句)
      */
-    private String cypherAppendNotJustNodes(JSONObject graphData) {
+    private String cypherAppendNotJustNodes(JSONObject graphData, long limit) {
         /*
          * 1、确定顶点【一度连边顶点】
          * 2、检测graphData是一个连通图【求弱连通分量】
@@ -579,9 +579,100 @@ public class AutoCypher {
             object.put(ES_FILTER, node.getJSONArray(ES_FILTER));
             filterNodeMap.put(i, object);
         }
+        /*
+         * 拼接的路径列表
+         * */
         List<LoopResult> graphNodeIdSeqPaths = replaceIndexId(graphPaths, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+        /*
+         * 根据查询代码自动优化拼接多条path
+         * */
+        return generateCypher(graphNodeIdSeqPaths, limit);
+    }
 
-        return null;
+    /**
+     * @param
+     * @return
+     * @Description: TODO({ var.p } - 生成子图模式匹配语句)
+     */
+    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long limit) {
+        /*
+         * 长路径优先
+         * 过滤属性数量优先
+         * */
+        List<LoopResult> graphNodeIdSeqPathsSort = graphNodeIdSeqPaths.stream()
+                // 路径长度排序与属性数量排序
+                .sorted((v1, v2) -> {
+                    Integer v1Int = v1.getNodeSeqIdList().size() + v1.getPropertiesKeySize();
+                    Integer v2Int = v2.getNodeSeqIdList().size() + v2.getPropertiesKeySize();
+                    return v2Int.compareTo(v1Int);
+                })
+                .collect(Collectors.toList());
+
+        /*
+         * 对路径进行编码：替换`{var.p}`变量标记
+         * 拼接形成一个CYPHER：子图模式匹配语句
+         * */
+        StringBuilder builder = new StringBuilder();
+        StringBuilder pathParas = new StringBuilder();
+        List<String> withParasBuilder = new ArrayList<>();
+        int size = graphNodeIdSeqPathsSort.size();
+        for (int i = 0; i < size; i++) {
+            LoopResult loopResult = graphNodeIdSeqPathsSort.get(i);
+            // 替换`{var.p}`变量标记
+            String para = "p" + i;
+            String path = loopResult.getPathStr().replace("{var.p}", para);
+            pathParas.append(para);
+            if (i < size - 1) {
+                pathParas.append(",");
+            }
+
+            /*
+             * 拼接`WITH`,提取变量
+             * 准备RETURN GRAPH
+             * */
+            withParasBuilder.add(jointParas(loopResult.getParaSeqList()) + "," + para);
+            String withPara = jointListParaStr(withParasBuilder);
+            withParasBuilder.add(",");
+            builder.append(path.replace("RETURN " + para, "WITH " + withPara));
+            builder.append("\n");
+        }
+        builder.append(appendReturnGraph(pathParas.toString(), limit));
+        /*
+         * 拼接序列中的CYPHER
+         * */
+        return builder.toString();
+    }
+
+    /**
+     * @param paraSeqList:变量序列
+     * @return
+     * @Description: TODO(拼接变量序列)
+     */
+    private String jointParas(List<String> paraSeqList) {
+        int size = paraSeqList.size();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            if (i < size - 1) {
+                builder.append(paraSeqList.get(i));
+                builder.append(",");
+            } else {
+                builder.append(paraSeqList.get(i));
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(准备RETURN GRAPH)
+     */
+    private String appendReturnGraph(String pathParas, long limit) {
+        if (limit > 0) {
+            return "RETURN {graph:[" + pathParas + "]} AS graph LIMIT " + limit;
+        } else {
+            return "RETURN {graph:[" + pathParas + "]} AS graph";
+        }
     }
 
     /**

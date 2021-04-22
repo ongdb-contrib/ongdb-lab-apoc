@@ -8,10 +8,7 @@ package data.lab.ongdb.result;
 import com.alibaba.fastjson.JSONObject;
 import data.lab.ongdb.schema.auto.FilterUtil;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,12 +28,6 @@ public class LoopResult {
     private final static String TYPE = "type";
 
     /**
-     * 过滤器
-     */
-    private final static String PROPERTIES_FILTER = "properties_filter";
-    private final static String ES_FILTER = "es_filter";
-
-    /**
      * 环路的节点序列
      */
     private List<Long> nodeSeqIdList;
@@ -45,6 +36,13 @@ public class LoopResult {
      * 环路的节点序列
      */
     private String pathStr;
+
+    /**
+     * 路径属性过滤的数量
+     */
+    private int propertiesKeySize;
+
+    private List<String> paraSeqList = new ArrayList<>();
 
     public LoopResult(Long[] nodeSeqIds) {
         this.nodeSeqIdList = Arrays.asList(nodeSeqIds);
@@ -87,6 +85,12 @@ public class LoopResult {
                 .collect(Collectors.toList());
     }
 
+    public LoopResult(List<Long> nodeSeqIdList, String pathStr, int propertiesKeySize) {
+        this.nodeSeqIdList = nodeSeqIdList;
+        this.pathStr = pathStr;
+        this.propertiesKeySize = propertiesKeySize;
+    }
+
     /**
      * @param pathStr:路径串
      * @param indexNode:索引和节点ID对应关系
@@ -112,7 +116,7 @@ public class LoopResult {
      * @param nodeIndex:节点ID和索引ID对应关系
      * @param filterNodeMap:属性过滤器
      * @return
-     * @Description: TODO
+     * @Description: TODO(拼接一个路径匹配模式语句)
      */
     private String appendPathStr(List<Long> nodeSeqIdList, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
         StringBuilder builder = new StringBuilder();
@@ -123,9 +127,15 @@ public class LoopResult {
         for (int i = 0; i < size; i++) {
             long id = nodeSeqIdList.get(i);
             long idIdx = nodeIndex.get(id);
-            builder.append("(n").append(idIdx).append(":").append(idToLabel.get(idIdx)).append(")");
+
+            // 拼接节点变量
+            String nodePara = "(n" + idIdx + ":" + idToLabel.get(idIdx) + ")";
+            builder.append(nodePara);
+            this.paraSeqList.add(nodePara.replace("(", "").replace(")", "").split(":")[0]);
+
             JSONObject nodeFilterObject = filterNodeMap.get(idIdx);
             nodeFilter.append(FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject));
+            this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
             if (i < size - 1) {
                 nodeFilter.append(" AND ");
                 long nextId = nodeSeqIdList.get(i + 1);
@@ -137,16 +147,23 @@ public class LoopResult {
                 if (startNode == id && endNode == nextId) {
                     String relPara = "r" + idIdx + "to" + nextIdIdx;
                     relFilter.append(FilterUtil.propertiesFilter(relPara, map));
+                    this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
+                    // 拼接关系变量
+//                    this.paraSeqList.add(relPara);
                     builder.append("-[").append(relPara).append(":").append(relationshipType).append("]->");
                 } else {
                     String relPara = "r" + nextIdIdx + "to" + idIdx;
                     relFilter.append(FilterUtil.propertiesFilter(relPara, map));
+                    this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
+                    // 拼接关系变量
+//                    this.paraSeqList.add(relPara);
                     builder.append("<-[").append(relPara).append(":").append(relationshipType).append("]-");
                 }
                 relFilter.append(" AND ");
             }
         }
-        if (nodeFilter.length() > 1 || relFilter.length() > 1) {
+        if ((nodeFilter.length() > 1 && !nodeFilter.toString().replace(" ", "").contains("ANDAND")) ||
+                relFilter.length() > 1 && !relFilter.toString().replace(" ", "").contains("ANDAND")) {
             String relFilterStr = relFilter.substring(0, relFilter.length() - 5);
             builder.append(" WHERE ");
             if (nodeFilter.length() > 1 && relFilterStr.length() > 1) {
@@ -195,11 +212,29 @@ public class LoopResult {
         this.pathStr = pathStr;
     }
 
+    public int getPropertiesKeySize() {
+        return propertiesKeySize;
+    }
+
+    public void setPropertiesKeySize(int propertiesKeySize) {
+        this.propertiesKeySize = propertiesKeySize;
+    }
+
+    public List<String> getParaSeqList() {
+        return paraSeqList;
+    }
+
+    public void setParaSeqList(List<String> paraSeqList) {
+        this.paraSeqList = paraSeqList;
+    }
+
     @Override
     public String toString() {
         return "LoopResult{" +
                 "nodeSeqIdList=" + nodeSeqIdList +
                 ", pathStr='" + pathStr + '\'' +
+                ", propertiesKeySize=" + propertiesKeySize +
+                ", paraSeqList=" + paraSeqList +
                 '}';
     }
 }

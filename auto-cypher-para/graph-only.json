@@ -1,0 +1,86 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "256",
+        "labels": [
+          "行业"
+        ]
+      },
+      {
+        "id": "250",
+        "labels": [
+          "公司"
+        ]
+      },
+      {
+        "id": "251",
+        "labels": [
+          "公司"
+        ]
+      },
+      {
+        "id": "252",
+        "labels": [
+          "公司"
+        ]
+      },
+      {
+        "id": "253",
+        "labels": [
+          "位置"
+        ]
+      },
+      {
+        "id": "254",
+        "labels": [
+          "产品"
+        ]
+      },
+      {
+        "id": "255",
+        "labels": [
+          "行业"
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "314",
+        "type": "持股",
+        "startNode": "250",
+        "endNode": "251"
+      },
+      {
+        "id": "315",
+        "type": "担保",
+        "startNode": "250",
+        "endNode": "252"
+      },
+      {
+        "id": "316",
+        "type": "属于",
+        "startNode": "250",
+        "endNode": "253"
+      },
+      {
+        "id": "317",
+        "type": "生产",
+        "startNode": "250",
+        "endNode": "254"
+      },
+      {
+        "id": "318",
+        "type": "属于",
+        "startNode": "250",
+        "endNode": "255"
+      },
+      {
+        "id": "319",
+        "type": "上下游",
+        "startNode": "255",
+        "endNode": "256"
+      }
+    ]
+  }
+}
