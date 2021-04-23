@@ -556,7 +556,7 @@ public class AutoCypher {
         /*
          * 当前图的所有路径集合【如果发现不是连通图则报错】
          * */
-        List<String> graphPaths = getGraphPathsWcc(analysisNodeIds, relationships, nodeIndex);
+        List<String> graphPaths = filterGraphSchemaRedundancyPath(getGraphPathsWcc(analysisNodeIds, relationships, nodeIndex));
 
         List<Map<String, Object>> directionListMap = relationships.stream()
                 .map(v -> {
@@ -573,20 +573,45 @@ public class AutoCypher {
         Map<Long, JSONObject> filterNodeMap = new HashMap<>();
         for (long i = 0; i < nodes.size(); i++) {
             JSONObject node = nodes.getJSONObject(Math.toIntExact(i));
-            idToLabel.put(i, node.getJSONArray(LABELS).getString(0));
+            idToLabel.put(node.getLongValue(ID), node.getJSONArray(LABELS).getString(0));
             JSONObject object = new JSONObject();
             object.put(PROPERTIES_FILTER, node.getJSONArray(PROPERTIES_FILTER));
             object.put(ES_FILTER, node.getJSONArray(ES_FILTER));
             filterNodeMap.put(i, object);
         }
         /*
-         * 拼接的路径列表
+         * 拼接的路径列表【路径拼接DEBUG】
          * */
         List<LoopResult> graphNodeIdSeqPaths = replaceIndexId(graphPaths, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
         /*
          * 根据查询代码自动优化拼接多条path
          * */
         return generateCypher(graphNodeIdSeqPaths, limit);
+    }
+
+    /**
+     * @param graphPathsWcc:弱连通图中的路径
+     * @return
+     * @Description: TODO(过滤掉图模式匹配中的冗余路径)
+     */
+    private List<String> filterGraphSchemaRedundancyPath(List<String> graphPathsWcc) {
+        List<Integer> idCollect = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
+        List<String> graphFilterPathsWcc = new ArrayList<>();
+        for (String path : graphPathsWcc) {
+            List<Integer> indexes = Arrays.stream(path.split(PATH_REL_JOINT))
+                    .map(Integer::parseInt)
+                    .distinct()
+                    .collect(Collectors.toList());
+            for (Integer idx : indexes) {
+                if (!ids.contains(idx) && !graphFilterPathsWcc.contains(path)) {
+                    graphFilterPathsWcc.add(path);
+                }
+            }
+            idCollect.addAll(indexes);
+            ids = idCollect.stream().distinct().collect(Collectors.toList());
+        }
+        return graphFilterPathsWcc;
     }
 
     /**

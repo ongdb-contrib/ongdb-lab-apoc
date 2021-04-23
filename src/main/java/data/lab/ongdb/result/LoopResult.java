@@ -129,7 +129,7 @@ public class LoopResult {
             long idIdx = nodeIndex.get(id);
 
             // 拼接节点变量
-            String nodePara = "(n" + idIdx + ":" + idToLabel.get(idIdx) + ")";
+            String nodePara = "(n" + idIdx + ":" + idToLabel.get(id) + ")";
             builder.append(nodePara);
             this.paraSeqList.add(nodePara.replace("(", "").replace(")", "").split(":")[0]);
 
@@ -148,22 +148,17 @@ public class LoopResult {
                     String relPara = "r" + idIdx + "to" + nextIdIdx;
                     relFilter.append(FilterUtil.propertiesFilter(relPara, map));
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
-                    // 拼接关系变量
-//                    this.paraSeqList.add(relPara);
                     builder.append("-[").append(relPara).append(":").append(relationshipType).append("]->");
                 } else {
                     String relPara = "r" + nextIdIdx + "to" + idIdx;
                     relFilter.append(FilterUtil.propertiesFilter(relPara, map));
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
-                    // 拼接关系变量
-//                    this.paraSeqList.add(relPara);
                     builder.append("<-[").append(relPara).append(":").append(relationshipType).append("]-");
                 }
                 relFilter.append(" AND ");
             }
         }
-        if ((nodeFilter.length() > 1 && !nodeFilter.toString().replace(" ", "").contains("ANDAND")) ||
-                relFilter.length() > 1 && !relFilter.toString().replace(" ", "").contains("ANDAND")) {
+        if (appendWhereCondition(nodeFilter, relFilter)) {
             String relFilterStr = relFilter.substring(0, relFilter.length() - 5);
             builder.append(" WHERE ");
             if (nodeFilter.length() > 1 && relFilterStr.length() > 1) {
@@ -178,6 +173,16 @@ public class LoopResult {
         }
         builder.append(" RETURN {var.p} ");
         return builder.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(是否执行WHERE条件的拼接)
+     */
+    private boolean appendWhereCondition(StringBuilder nodeFilter, StringBuilder relFilter) {
+        return (nodeFilter.length() > 1 && !nodeFilter.toString().replace(" ", "").contains("ANDAND")) ||
+                relFilter.length() > 1 && !relFilter.toString().replace(" ", "").contains("ANDAND");
     }
 
     /**
