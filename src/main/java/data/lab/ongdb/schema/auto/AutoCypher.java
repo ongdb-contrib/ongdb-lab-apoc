@@ -53,7 +53,13 @@ public class AutoCypher {
     private final static String GRAPH_DATA_RELATIONSHIPS_FIELD = "relationships";
     private final static String ID = "id";
     private final static String PATH_REL_JOINT = "->";
-    private final static String CYPHER_JOINT = "UNION ALL";
+
+    /*
+     * 连接节点的子查询
+     * */
+    //private final static String CYPHER_JOINT_ALL = "UNION ALL";
+    private final static String CYPHER_JOINT = "UNION";
+
     private final static String START_NODE = "startNode";
     private final static String END_NODE = "endNode";
     private final static String TYPE = "type";
@@ -840,24 +846,30 @@ public class AutoCypher {
         String properties_filter = FilterUtil.propertiesFilter("n", nodeObject.getJSONArray("properties_filter"));
         // custom.es.result.bool({es-url},{index-name},{query-dsl})
         String es_filter = FilterUtil.esFilter("n", nodeObject.getJSONArray("es_filter"));
-        if ("".equals(es_filter)) {
+        if ("".equals(es_filter) && !"".equals(properties_filter)) {
             if (limit > 0) {
                 return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n LIMIT " + limit;
             } else {
                 return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n";
             }
-        }
-        if ("".equals(properties_filter)) {
+        } else if (!"".equals(es_filter) && "".equals(properties_filter)) {
             if (limit > 0) {
                 return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n LIMIT " + limit;
             } else {
                 return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n";
             }
-        }
-        if (limit > 0) {
-            return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n LIMIT " + limit;
+        } else if (!"".equals(properties_filter)) {
+            if (limit > 0) {
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n LIMIT " + limit;
+            } else {
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
+            }
         } else {
-            return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
+            if (limit > 0) {
+                return "MATCH (n:" + label + ") RETURN n LIMIT " + limit;
+            } else {
+                return "MATCH (n:" + label + ") RETURN n";
+            }
         }
     }
 

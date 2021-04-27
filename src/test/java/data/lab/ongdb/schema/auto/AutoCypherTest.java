@@ -1,14 +1,11 @@
 package data.lab.ongdb.schema.auto;
 
-import data.lab.ongdb.util.FileUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Result;
 import org.neo4j.harness.junit.Neo4jRule;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -453,14 +450,64 @@ public class AutoCypherTest {
         AutoCypher autoCypher = new AutoCypher();
         // 入参JSON【暂不支持属性间布尔或条件】
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-es.json", "UTF-8"), -1);
-        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-only.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-only.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-pro.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-pro-es.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-es.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-only.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-pro.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-pro-es.json", "UTF-8"), -1);
-        System.out.println(cypher + "\n");
+//        System.out.println(cypher + "\n");
+
+
+//        System.out.println(
+//                "- 包含节点关系只包含ES过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-es.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 包含节点关系不包含过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-only.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 包含节点关系只包含属性过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-pro.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 包含节点关系包含ES过滤器和属性过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "graph-pro-es.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 只包含节点只包含ES过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-es.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 只包含节点不包含过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-only.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 只包含节点只包含属性过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-pro.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
+//        System.out.println(
+//                "- 只包含节点包含ES过滤器和属性过滤器\n" +
+//                        "```\n" +
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "node-pro-es.json", "UTF-8"), -1)
+//                        + "\n```"
+//        );
     }
 
     @Test
