@@ -532,7 +532,7 @@ CALL apoc.cypher.run(cypher,null) YIELD value WITH value.path AS path,idsSeqLoop
 WITH RELATIONSHIPS(path) AS relList,idsSeqLoopGraph,atomicId
 UNWIND relList AS relationship
 // 将环路解析为一个虚拟路径【将一个path解析为一个虚拟path】
-CALL olab.schema.loop.vpath(relationship,idsSeqLoopGraph,atomicId) YIELD from,rel,to WITH (from)-[rel]->(to) AS path,idsSeqLoopGraph,atomicId
+CALL olab.schema.loop.vpath(relationship,atomicId) YIELD from,rel,to WITH (from)-[rel]->(to) AS path,idsSeqLoopGraph,atomicId
 // 输出环路，以及环路ID序列，该环路节点ID序列的原子性标记ID
 RETURN COLLECT(path) AS vLoopGraph,idsSeqLoopGraph,atomicId
 ```
@@ -555,7 +555,7 @@ CALL apoc.cypher.run(cypher,null) YIELD value WITH value.path AS path,idsSeqLoop
 WITH RELATIONSHIPS(path) AS relList,idsSeqLoopGraph,atomicId
 UNWIND relList AS relationship
 // 将环路解析为一个虚拟路径【将一个path解析为一个虚拟path】
-CALL olab.schema.loop.vpath(relationship,idsSeqLoopGraph,atomicId) YIELD from,rel,to WITH (from)-[rel]->(to) AS path,idsSeqLoopGraph,atomicId
+CALL olab.schema.loop.vpath(relationship,atomicId) YIELD from,rel,to WITH (from)-[rel]->(to) AS path,idsSeqLoopGraph,atomicId
 // 输出环路，以及环路ID序列，该环路节点ID序列的原子性标记ID
 RETURN COLLECT(path) AS vLoopGraph,idsSeqLoopGraph,atomicId
 ```

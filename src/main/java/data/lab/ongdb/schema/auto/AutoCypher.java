@@ -1004,14 +1004,13 @@ public class AutoCypher {
 
     /**
      * @param relationship:关系
-     * @param idsSeqLoopGraph:路径序列ID
      * @param atomicId:原子性ID
      * @return
      * @Description: TODO(生成虚拟图)
      */
     @Procedure(name = "olab.schema.loop.vpath", mode = Mode.READ)
     @Description("CALL olab.schema.loop.vpath(path) YIELD vpath RETURN vpath")
-    public Stream<VirtualPathResult> isLoopGraph(@Name("relationship") Relationship relationship, @Name("idsSeqLoopGraph") List<Long> idsSeqLoopGraph, @Name("atomicId") Long atomicId) {
+    public Stream<VirtualPathResult> isLoopGraph(@Name("relationship") Relationship relationship, @Name("atomicId") Long atomicId) {
         RelationshipType type = relationship.getType();
 
         Node fromNode = relationship.getStartNode();
