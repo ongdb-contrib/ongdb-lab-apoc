@@ -429,26 +429,26 @@ public class AutoCypher {
     }
 
     /**
-     * @param json:入参    #############
-     *                   属性过滤器属性之间过滤，连接方式只支持AND
-     *                   #############
-     *                   属性过滤器(properties_filter)：
-     *                   包含【STRING】：‘ name CONTAINS '北京' '
-     *                   等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
-     *                   大于【INT、LONG】：‘ count>0 ’
-     *                   小于【INT、LONG】：‘ count<0 ’
-     *                   大于等于【INT、LONG】：‘ count>=0 ’
-     *                   小于等于【INT、LONG】：‘ count>=0 ’
-     *                   范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
-     *                   范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
-     *                   范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
-     *                   范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
-     *                   #############
-     *                   ES-QUERY
-     *                   #############
-     *                   ES过滤器(es_filter)：
-     *                   ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
-     * @param limit:限制参数
+     * @param json:入参              #############
+     *                             属性过滤器属性之间过滤，连接方式只支持AND
+     *                             #############
+     *                             属性过滤器(properties_filter)：
+     *                             包含【STRING】：‘ name CONTAINS '北京' '
+     *                             等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
+     *                             大于【INT、LONG】：‘ count>0 ’
+     *                             小于【INT、LONG】：‘ count<0 ’
+     *                             大于等于【INT、LONG】：‘ count>=0 ’
+     *                             小于等于【INT、LONG】：‘ count>=0 ’
+     *                             范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
+     *                             范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
+     *                             范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
+     *                             范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
+     *                             #############
+     *                             ES-QUERY
+     *                             #############
+     *                             ES过滤器(es_filter)：
+     *                             ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
+     * @param limit:限制参数【表示匹配多个子图】
      * @return
      * @Description: TODO
      * <p>
@@ -473,7 +473,7 @@ public class AutoCypher {
      */
     @UserFunction(name = "olab.schema.auto.cypher")
     @Description("```\n" +
-            "RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT}) AS cypher\n" +
+            "RETURN olab.schema.auto.cypher({JSON},{LIMIT}) AS cypher\n" +
             "```\n" +
             "```\n" +
             "输入：\n" +
@@ -545,7 +545,7 @@ public class AutoCypher {
         /*
          * 过滤出顶点集合
          * */
-        ArrayList<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
+        List<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
 
         /*
          * 转换图结构为矩阵寻找所有子图路径：
@@ -555,7 +555,6 @@ public class AutoCypher {
         HashMap<String, HashMap<Long, Long>> idMap = transferNodeIndex(nodes);
         HashMap<Long, Long> nodeIndex = idMap.get(ID_MAP_TO_VID);
         HashMap<Long, Long> indexNode = idMap.get(VID_MAP_TO_ID);
-
 
         JSONArray relationships = graphData.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD);
 
@@ -731,7 +730,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO(获取路径串 【 如果发现不是连通图则报错 】)
      */
-    private List<String> getGraphPathsWcc(ArrayList<Long> analysisNodeIds, JSONArray relationships, HashMap<Long, Long> nodeIndex) {
+    private List<String> getGraphPathsWcc(List<Long> analysisNodeIds, JSONArray relationships, HashMap<Long, Long> nodeIndex) {
         // 虚拟节点数据增加到关系数据-使用INDEX替换关系中节点ID
         JSONArray transferRelations = transferRelations(nodeIndex, relationships);
 
@@ -777,15 +776,17 @@ public class AutoCypher {
     /**
      * @param graphData:图对象
      * @return
-     * @Description: TODO(找到一度连边顶点)
+     * @Description: TODO(找到一度连边顶点 ： 与该点相连的边只有一个)
      */
-    private ArrayList<Long> filterAnalysisNodeIds(JSONObject graphData) {
+    private List<Long> filterAnalysisNodeIds(JSONObject graphData) {
         ArrayList<Long> analysisNodeIds = new ArrayList<>();
         JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
         JSONArray relationships = graphData.getJSONArray(GRAPH_DATA_RELATIONSHIPS_FIELD);
+        ArrayList<Long> allAnalysisNodeIds = new ArrayList<>();
         for (Object obj : nodes) {
             JSONObject object = (JSONObject) obj;
             long id = object.getLongValue(ID);
+            allAnalysisNodeIds.add(id);
             int relCount = 0;
             for (Object objRel : relationships) {
                 JSONObject objectRel = (JSONObject) objRel;
@@ -801,7 +802,15 @@ public class AutoCypher {
                 analysisNodeIds.add(id);
             }
         }
-        return analysisNodeIds;
+        /*
+         * 如果单连边节点为空，则将全部节点纳入analysisNodeIds
+         * */
+        if (analysisNodeI
+        ds.size() < 2) {
+            return allAnalysisNodeIds.stream().distinct().collect(Collectors.toList());
+        } else {
+            return analysisNodeIds.stream().distinct().collect(Collectors.toList());
+        }
     }
 
     /**
@@ -1004,12 +1013,12 @@ public class AutoCypher {
 
     /**
      * @param relationship:关系
-     * @param atomicId:原子性ID
+     * @param atomicId:原子性ID【对一条关系中的关系ID和节点ID都乘这个值】
      * @return
      * @Description: TODO(生成虚拟图)
      */
     @Procedure(name = "olab.schema.loop.vpath", mode = Mode.READ)
-    @Description("CALL olab.schema.loop.vpath(path) YIELD vpath RETURN vpath")
+    @Description("CALL olab.schema.loop.vpath({relationship},{atomicId}]) YIELD from,rel,to RETURN from,rel,to")
     public Stream<VirtualPathResult> isLoopGraph(@Name("relationship") Relationship relationship, @Name("atomicId") Long atomicId) {
         RelationshipType type = relationship.getType();
 

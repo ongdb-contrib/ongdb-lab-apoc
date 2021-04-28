@@ -181,8 +181,16 @@ public class LoopResult {
      * @Description: TODO(是否执行WHERE条件的拼接)
      */
     private boolean appendWhereCondition(StringBuilder nodeFilter, StringBuilder relFilter) {
-        return (nodeFilter.length() > 1 && !nodeFilter.toString().replace(" ", "").contains("ANDAND")) ||
-                relFilter.length() > 1 && !relFilter.toString().replace(" ", "").contains("ANDAND");
+        String nodeFilterStr = nodeFilter.toString().replace(" ","")
+                .replace("A","")
+                .replace("N","")
+                .replace("D","");
+        String relFilterStr = relFilter.toString().replace(" ","")
+                .replace("A","")
+                .replace("N","")
+                .replace("D","");
+
+        return (!"".equals(nodeFilterStr)) || (!"".equals(relFilterStr));
     }
 
     /**
