@@ -450,64 +450,65 @@ public class AutoCypherTest {
     @Test
     public void autoRelCypher() {
         AutoCypher autoCypher = new AutoCypher();
+//        String dir="auto-test-1";
+        String dir="auto-test-2";
         // 入参JSON【暂不支持属性间布尔或条件】
-        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-es.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-only.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-pro.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-pro-es.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-es.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-only.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + "auto-test-1"  + File.separator + "node-pro.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-pro-es.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), -1);
+        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 3);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir  + File.separator + "node-pro.json", "UTF-8"), -1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), -1);
         System.out.println(cypher + "\n");
-
 
 //        System.out.println(
 //                "- 包含节点关系只包含ES过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-es.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 包含节点关系不包含过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-only.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 包含节点关系只包含属性过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-pro.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 包含节点关系包含ES过滤器和属性过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "graph-pro-es.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 只包含节点只包含ES过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-es.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 只包含节点不包含过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-only.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 只包含节点只包含属性过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-pro.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
 //        System.out.println(
 //                "- 只包含节点包含ES过滤器和属性过滤器\n" +
 //                        "```\n" +
-//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + "auto-test-1" + File.separator + "node-pro-es.json", "UTF-8"), -1)
+//                        autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), -1)
 //                        + "\n```"
 //        );
     }
@@ -516,7 +517,8 @@ public class AutoCypherTest {
     public void autoCypher() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         Map<String, Object> hashMap = new HashMap<>();
-        hashMap.put("JSON", FileUtil.readAllLine("auto-cypher-para" + File.separator + "auto-test-1" + File.separator + "graph-pro-es.json", "UTF-8"));
+        String dir="auto-test-1";
+        hashMap.put("JSON", FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"));
         hashMap.put("LIMIT", 100);
         // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
         Result result = db.execute("RETURN olab.schema.auto.cypher({JSON},{LIMIT}) AS cypher", hashMap);

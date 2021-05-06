@@ -209,6 +209,26 @@ public class LoopResult {
                 .orElse(new HashMap<>());
     }
 
+    /**
+     * @param
+     * @return
+     * @Description: TODO(获取指定ID的MAP)
+     */
+    private Map<String, Object> allRelationshipType(Long id, Long nextId, List<Map<String, Object>> directionListMap) {
+        List<Map<String, Object>> mapList= directionListMap.stream()
+                .filter(v -> {
+                    long startNode = Long.parseLong(String.valueOf(v.get(START_NODE)));
+                    long endNode = Long.parseLong(String.valueOf(v.get(END_NODE)));
+                    return (startNode == id && endNode == nextId) || (endNode == id && startNode == nextId);
+                }).collect(Collectors.toList());
+        /*
+        * mapList的size>1表示节点之间有多条一度路径，需要将此路径扩充到最终生成的完整路径中
+        * 【例如一条五跳连接的路径中，存在两个节点之间有两条一度路径，则最终生成的完整路径为两条】
+        * */
+        return mapList.stream().findFirst()
+                .orElse(new HashMap<>());
+    }
+
     public List<Long> getNodeSeqIdList() {
         return nodeSeqIdList;
     }

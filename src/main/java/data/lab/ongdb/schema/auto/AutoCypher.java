@@ -545,7 +545,8 @@ public class AutoCypher {
         /*
          * 过滤出顶点集合
          * */
-        List<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
+//        List<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
+        List<Long> analysisNodeIds = allAnalysisNodeIds(graphData);
 
         /*
          * 转换图结构为矩阵寻找所有子图路径：
@@ -776,7 +777,7 @@ public class AutoCypher {
     /**
      * @param graphData:图对象
      * @return
-     * @Description: TODO(找到一度连边顶点 ： 与该点相连的边只有一个)
+     * @Description: TODO(找到所有顶点ID：找到一度连边顶点 ： 与该点相连的边只有一个)
      */
     private List<Long> filterAnalysisNodeIds(JSONObject graphData) {
         ArrayList<Long> analysisNodeIds = new ArrayList<>();
@@ -805,12 +806,27 @@ public class AutoCypher {
         /*
          * 如果单连边节点为空，则将全部节点纳入analysisNodeIds
          * */
-        if (analysisNodeI
-        ds.size() < 2) {
+        if (analysisNodeIds.size() < 3) {
             return allAnalysisNodeIds.stream().distinct().collect(Collectors.toList());
         } else {
             return analysisNodeIds.stream().distinct().collect(Collectors.toList());
         }
+    }
+
+    /**
+     * @param graphData:图对象
+     * @return
+     * @Description: TODO(找到所有顶点ID)
+     */
+    private List<Long> allAnalysisNodeIds(JSONObject graphData) {
+        JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
+        ArrayList<Long> allAnalysisNodeIds = new ArrayList<>();
+        for (Object obj : nodes) {
+            JSONObject object = (JSONObject) obj;
+            long id = object.getLongValue(ID);
+            allAnalysisNodeIds.add(id);
+        }
+        return allAnalysisNodeIds.stream().distinct().collect(Collectors.toList());
     }
 
     /**
