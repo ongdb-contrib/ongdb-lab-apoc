@@ -14,7 +14,6 @@ import org.neo4j.procedure.Name;
 import org.neo4j.procedure.UserFunction;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Yc-Ma
@@ -101,24 +100,9 @@ public class FunctionPartition {
      */
     @UserFunction(name = "olab.cartesian")
     @Description("笛卡尔乘积算法 【对列表中实体使用指定字段进行分组，并进行笛卡尔乘积运算进行组合】")
-    public List<List<Map<String, Object>>> cartesian(@Name("mapList") List<Map<String, Object>> mapList, @Name("groupField") String groupField) {
-        /*
-        * 按指定字段（type）分组
-        * */
-        Map<Object, List<Map<String, Object>>> modelMap = mapList.stream().collect(Collectors.groupingBy(v->v.get(groupField)));
-        Collection<List<Map<String, Object>>> mapValues = modelMap.values();
-
-        /*
-        * 原List
-        * */
-        List<List<Map<String, Object>>> dimensionValue = new ArrayList<>(mapValues);
-
-        /*
-        * 返回集合
-        * */
-        List<List<Map<String, Object>>> result = new ArrayList<>();
-        new ArrayUtils().descartes(dimensionValue, result, 0, new ArrayList<>());
-        return result;
+    public List<List<Map<String, Object>>> cartesian(@Name("mapList") List<Map<String, Object>> mapList,
+                                                     @Name("groupField") String groupField) {
+        return new ArrayUtils().descartes(mapList, groupField);
     }
 }
 

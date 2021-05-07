@@ -6,7 +6,10 @@ package data.lab.ongdb.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Yc-Ma
@@ -15,6 +18,32 @@ import java.util.List;
  * @date 2021/5/7 15:52
  */
 public class ArrayUtils {
+
+    /**
+     * @param mapList:原List
+     * @param groupField:列表中对象的分组字段
+     * @return
+     * @Description: TODO(笛卡尔乘积算法 【 对列表中实体使用指定字段进行分组 ， 并进行笛卡尔乘积运算进行组合 】)
+     */
+    public List<List<Map<String, Object>>> descartes(List<Map<String, Object>> mapList, String groupField) {
+        /*
+         * 按指定字段（type）分组
+         * */
+        Map<Object, List<Map<String, Object>>> modelMap = mapList.stream().collect(Collectors.groupingBy(v -> v.get(groupField)));
+        Collection<List<Map<String, Object>>> mapValues = modelMap.values();
+
+        /*
+         * 原List
+         * */
+        List<List<Map<String, Object>>> dimensionValue = new ArrayList<>(mapValues);
+
+        /*
+         * 返回集合
+         * */
+        List<List<Map<String, Object>>> result = new ArrayList<>();
+        new ArrayUtils().descartes(dimensionValue, result, 0, new ArrayList<>());
+        return result;
+    }
 
     /**
      *
@@ -29,7 +58,7 @@ public class ArrayUtils {
      * @param layer          中间参数
      * @param currentList    中间参数
      * @return
-     * @Description: TODO(笛卡尔乘积算法 【对列表中实体使用指定字段进行分组，并进行笛卡尔乘积运算进行组合】)
+     * @Description: TODO(笛卡尔乘积算法 【 对列表中实体使用指定字段进行分组 ， 并进行笛卡尔乘积运算进行组合 】)
      * 把一个List{[1,2],[A,B],[a,b]} 转化成
      * List{[1,A,a],[1,A,b],[1,B,a],[1,B,b],[2,A,a],[2,A,b],[2,B,a],[2,B,b]} 数组输出
      */
@@ -56,4 +85,7 @@ public class ArrayUtils {
             }
         }
     }
+
 }
+
+
