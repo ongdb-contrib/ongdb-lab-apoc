@@ -11,6 +11,7 @@ import data.lab.ongdb.algo.AllPaths;
 import data.lab.ongdb.algo.FloydShortestPath;
 import data.lab.ongdb.result.*;
 import data.lab.ongdb.structure.AdjacencyNode;
+import data.lab.ongdb.util.ArrayUtils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -295,7 +296,7 @@ public class AutoCypher {
             /*
              * directionListMap使用开始结束节点，还有关系类型排重统计 KEY:startNode-id-endNode-id VALUE:directionListMapList
              * */
-            List<Map<String, Object>> mapList = countDirectionListMap(directionListMap);
+            List<AuDirection> mapList = countDirectionListMap(directionListMap);
 
             /*
              * 1、directionListMap进行统计排重设置一个size字段、listMap字段
@@ -305,9 +306,9 @@ public class AutoCypher {
              * 5、生成LoopResult
              * 6、排重LoopResult List之后返回
              * */
-            int num = mapList.stream().map(v -> Integer.parseInt(String.valueOf(v.get("size")))).reduce(0, (x, y) -> x * y);
+            int num = mapList.stream().map(v -> v.getSize()).reduce(1, (x, y) -> x * y);
             for (int i = 0; i < num; i++) {
-                List<String[]> cartesianList = cartesianList(mapList, num);
+                List<String[]> cartesianList = cartesianList(mapList);
                 List<Map<String, Object>> resetMapList = resetMapList(mapList, cartesianList);
                 LoopResult loopResult = new LoopResult(pathStr, indexNode, resetMapList, idToLabel, nodeIndex, filterNodeMap);
                 loopResultList.add(loopResult);
@@ -318,16 +319,30 @@ public class AutoCypher {
 
     /**
      * @param mapList:mapList包含size字段、listMap字段
-     * @param num:生成笛卡尔积列表的长度
      * @return
      * @Description: TODO(原始map经过统计之后 ， 生成笛卡尔积列表组合)
      */
-    private List<String[]> cartesianList(List<Map<String, Object>> mapList, int num) {
+    private List<String[]> cartesianList(List<AuDirection> mapList) {
         // 列表中的数组长度-表示mapList中size>1的元素的个数
-        int greaterOneSize = Math.toIntExact(mapList.stream().filter(v -> Integer.parseInt(String.valueOf(v.get("size"))) > 1).count());
-        List<String[]> seqList = new ArrayList<>(num);
+        int greaterOneSize = Math.toIntExact(mapList.stream().filter(v -> v.getSize() > 1).count());
 
-        return null;
+        List<AuDirection> reMapList = mapList.stream().filter(v -> v.getSize() > 1).collect(Collectors.toList());
+        Map<Object, List<Map<String, Object>>> modelMap = new HashMap<>();
+        for (int i = 0; i < greaterOneSize; i++) {
+            AuDirection reMapListTwo = reMapList.get(i);
+            List<Map<String, Object>> conMapListTwo = new ArrayList<>();
+            for (int j = 0; j < reMapListTwo.getSize(); j++) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("seq", j);
+                conMapListTwo.add(map);
+            }
+            modelMap.put(i, conMapListTwo);
+        }
+        List<List<Map<String, Object>>> descartes = new ArrayUtils().descartes(modelMap);
+        return descartes.stream().map(v -> {
+            List<String> list = v.stream().map(para -> String.valueOf(para.get("seq"))).collect(Collectors.toList());
+            return list.toArray(new String[list.size()]);
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -336,27 +351,44 @@ public class AutoCypher {
      * @return
      * @Description: TODO(原始map经过统计之后 ， 使用笛卡尔积列表组合生成新的directionListMap)
      */
-    private List<Map<String, Object>> resetMapList(List<Map<String, Object>> mapList, List<String[]> cartesianList) {
+    private List<Map<String, Object>> resetMapList(List<AuDirection> mapList, List<String[]> cartesianList) {
         return null;
     }
 
-    private List<Map<String, Object>> countDirectionListMap(List<Map<String, Object>> directionListMap) {
-        List<Map<String, Object>> mapList = new ArrayList<>();
+    //
+    private List<AuDirection> countDirectionListMap(List<Map<String, Object>> directionListMap) {
+        List<AuDirection> mapList = new ArrayList<>();
         for (Map<String, Object> map : directionListMap) {
-            if (mapList.contains(map)) {
-                int size = Integer.parseInt(String.valueOf(map.get("size"))) + 1;
-                map.put("size", size);
-                List<Map<String, Object>> listMap = (List<Map<String, Object>>) map.get("listMap");
-                listMap.add(map);
+            AuDirection auDirection = new AuDirection(
+                    String.valueOf(map.get(START_NODE)),
+                    String.valueOf(map.get(END_NODE)),
+                    String.valueOf(map.get(TYPE)),
+                    String.valueOf(map.get(PROPERTIES_FILTER)),
+                    String.valueOf(map.get(ES_FILTER))
+            );
+            if (mapList.contains(auDirection)) {
+                int size = auDirection.getSize() + 1;
+                auDirection.setSize(size);
+                List<AuDirection> listMap = getAuDirection(mapList, auDirection);
+                listMap.add(auDirection);
             } else {
-                map.put("size", 1);
-                List<Map<String, Object>> listMap = new ArrayList<>();
-                listMap.add(map);
-                map.put("listMap", listMap);
+                auDirection.setSize(1);
+                List<AuDirection> listMap = new ArrayList<>();
+                listMap.add(auDirection);
+                auDirection.setListMap(listMap);
             }
-            mapList.add(map);
+            mapList.add(auDirection);
         }
         return mapList;
+    }
+
+    private List<AuDirection> getAuDirection(List<AuDirection> mapList, AuDirection auDirection) {
+        for (AuDirection direction : mapList) {
+            if (direction.equals(auDirection)) {
+                return direction.getListMap();
+            }
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -1134,6 +1166,108 @@ public class AutoCypher {
 
         Relationship rel = new VirtualRelationship(relationship.getId() * atomicId, from, to, type).withProperties(relationship.getAllProperties());
         return Stream.of(new VirtualPathResult(from, rel, to));
+    }
+
+    static class AuDirection {
+        private String startNode;
+        private String endNode;
+        private String type;
+        private String propertiesFilter;
+        private String esFilter;
+        private int size;
+        private List<AuDirection> listMap;
+
+        public AuDirection(String startNode, String endNode, String type, String propertiesFilter, String esFilter) {
+            this.startNode = startNode;
+            this.endNode = endNode;
+            this.type = type;
+            this.propertiesFilter = propertiesFilter;
+            this.esFilter = esFilter;
+        }
+
+        public AuDirection(String startNode, String endNode, String type, String propertiesFilter, String esFilter, int size, List<AuDirection> listMap) {
+            this.startNode = startNode;
+            this.endNode = endNode;
+            this.type = type;
+            this.propertiesFilter = propertiesFilter;
+            this.esFilter = esFilter;
+            this.size = size;
+            this.listMap = listMap;
+        }
+
+        public String getStartNode() {
+            return startNode;
+        }
+
+        public void setStartNode(String startNode) {
+            this.startNode = startNode;
+        }
+
+        public String getEndNode() {
+            return endNode;
+        }
+
+        public void setEndNode(String endNode) {
+            this.endNode = endNode;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getPropertiesFilter() {
+            return propertiesFilter;
+        }
+
+        public void setPropertiesFilter(String propertiesFilter) {
+            this.propertiesFilter = propertiesFilter;
+        }
+
+        public String getEsFilter() {
+            return esFilter;
+        }
+
+        public void setEsFilter(String esFilter) {
+            this.esFilter = esFilter;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
+        public List<AuDirection> getListMap() {
+            return listMap;
+        }
+
+        public void setListMap(List<AuDirection> listMap) {
+            this.listMap = listMap;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            AuDirection that = (AuDirection) o;
+            return (Objects.equals(startNode, that.startNode) || Objects.equals(startNode, that.endNode)) &&
+                    (Objects.equals(endNode, that.endNode) || Objects.equals(endNode, that.startNode));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(startNode, endNode, type);
+        }
     }
 }
 

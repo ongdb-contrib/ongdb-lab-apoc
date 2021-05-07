@@ -20,6 +20,30 @@ import java.util.stream.Collectors;
 public class ArrayUtils {
 
     /**
+     * @param modelMap:【传入分好组的MAP】
+     * @return
+     * @Description: TODO(笛卡尔乘积算法 【进行笛卡尔乘积运算进行组合】)
+     */
+    public List<List<Map<String, Object>>> descartes(Map<Object, List<Map<String, Object>>> modelMap) {
+        /*
+         * 按指定字段（type）分组
+         * */
+        Collection<List<Map<String, Object>>> mapValues = modelMap.values();
+
+        /*
+         * 原List
+         * */
+        List<List<Map<String, Object>>> dimensionValue = new ArrayList<>(mapValues);
+
+        /*
+         * 返回集合
+         * */
+        List<List<Map<String, Object>>> result = new ArrayList<>();
+        new ArrayUtils().descartes(dimensionValue, result, 0, new ArrayList<>());
+        return result;
+    }
+
+    /**
      * @param mapList:原List
      * @param groupField:列表中对象的分组字段
      * @return
