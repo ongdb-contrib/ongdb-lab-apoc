@@ -256,6 +256,26 @@ public class AutoCypher {
                 .collect(Collectors.toList());
     }
 
+//    /**
+//     * @param graphPaths:STRING类型路径列表
+//     * @param indexNode:索引与节点的ID对应关系
+//     * @param directionListMap:方向对应关系    包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
+//     * @param idToLabel:索引节点ID对应的节点标签MAP
+//     * @param nodeIndex:节点ID和索引ID对应关系
+//     * @param filterNodeMap:属性过滤器
+//     * @return
+//     * @Description: TODO(拿到路径列表 - 并将索引ID替换为节点ID)
+//     */
+//    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+//        /*
+//         * 拿到路径列表-并将索引ID替换为节点ID
+//         * */
+//        return graphPaths
+//                .parallelStream()
+//                .map(v -> new LoopResult(v, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap))
+//                .collect(Collectors.toList());
+//    }
+
     /**
      * @param graphPaths:STRING类型路径列表
      * @param indexNode:索引与节点的ID对应关系
@@ -270,10 +290,73 @@ public class AutoCypher {
         /*
          * 拿到路径列表-并将索引ID替换为节点ID
          * */
-        return graphPaths
-                .parallelStream()
-                .map(v -> new LoopResult(v, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap))
-                .collect(Collectors.toList());
+        List<LoopResult> loopResultList = new ArrayList<>();
+        for (String pathStr : graphPaths) {
+            /*
+             * directionListMap使用开始结束节点，还有关系类型排重统计 KEY:startNode-id-endNode-id VALUE:directionListMapList
+             * */
+            List<Map<String, Object>> mapList = countDirectionListMap(directionListMap);
+
+            /*
+             * 1、directionListMap进行统计排重设置一个size字段、listMap字段
+             * 2、对SIZE>1的map进行笛卡尔积组合，生成num【num为mapList中size的乘积】
+             * 3、对于size>1的map生成边的组合对列表【笛卡尔积的组合对】
+             * 4、从directionListMap过滤掉组合对之外的元素
+             * 5、生成LoopResult
+             * 6、排重LoopResult List之后返回
+             * */
+            int num = mapList.stream().map(v -> Integer.parseInt(String.valueOf(v.get("size")))).reduce(0, (x, y) -> x * y);
+            for (int i = 0; i < num; i++) {
+                List<String[]> cartesianList = cartesianList(mapList, num);
+                List<Map<String, Object>> resetMapList = resetMapList(mapList, cartesianList);
+                LoopResult loopResult = new LoopResult(pathStr, indexNode, resetMapList, idToLabel, nodeIndex, filterNodeMap);
+                loopResultList.add(loopResult);
+            }
+        }
+        return loopResultList.stream().distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * @param mapList:mapList包含size字段、listMap字段
+     * @param num:生成笛卡尔积列表的长度
+     * @return
+     * @Description: TODO(原始map经过统计之后 ， 生成笛卡尔积列表组合)
+     */
+    private List<String[]> cartesianList(List<Map<String, Object>> mapList, int num) {
+        // 列表中的数组长度-表示mapList中size>1的元素的个数
+        int greaterOneSize = Math.toIntExact(mapList.stream().filter(v -> Integer.parseInt(String.valueOf(v.get("size"))) > 1).count());
+        List<String[]> seqList = new ArrayList<>(num);
+
+        return null;
+    }
+
+    /**
+     * @param mapList:mapList包含size字段、listMap字段
+     * @param cartesianList:size>1的map组合序列【序列为mapList中listMap字段的元素索引】【表示本次生成LoopResult使用哪个索引的元素】
+     * @return
+     * @Description: TODO(原始map经过统计之后 ， 使用笛卡尔积列表组合生成新的directionListMap)
+     */
+    private List<Map<String, Object>> resetMapList(List<Map<String, Object>> mapList, List<String[]> cartesianList) {
+        return null;
+    }
+
+    private List<Map<String, Object>> countDirectionListMap(List<Map<String, Object>> directionListMap) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Map<String, Object> map : directionListMap) {
+            if (mapList.contains(map)) {
+                int size = Integer.parseInt(String.valueOf(map.get("size"))) + 1;
+                map.put("size", size);
+                List<Map<String, Object>> listMap = (List<Map<String, Object>>) map.get("listMap");
+                listMap.add(map);
+            } else {
+                map.put("size", 1);
+                List<Map<String, Object>> listMap = new ArrayList<>();
+                listMap.add(map);
+                map.put("listMap", listMap);
+            }
+            mapList.add(map);
+        }
+        return mapList;
     }
 
     /**
@@ -545,7 +628,10 @@ public class AutoCypher {
         /*
          * 过滤出顶点集合
          * */
-//        List<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
+        /*
+         * 过滤出一度连边的节点
+         * List<Long> analysisNodeIds = filterAnalysisNodeIds(graphData);
+         * */
         List<Long> analysisNodeIds = allAnalysisNodeIds(graphData);
 
         /*
@@ -651,7 +737,7 @@ public class AutoCypher {
             LoopResult loopResult = graphNodeIdSeqPathsSort.get(i);
             // 替换`{var.p}`变量标记
             String para = "p" + i;
-            String path = loopResult.getPathStr().replace("{var.p}", para);
+            String path = loopResult.getJointCypher().replace("{var.p}", para);
             pathParas.append(para);
             if (i < size - 1) {
                 pathParas.append(",");
@@ -777,7 +863,7 @@ public class AutoCypher {
     /**
      * @param graphData:图对象
      * @return
-     * @Description: TODO(找到所有顶点ID：找到一度连边顶点 ： 与该点相连的边只有一个)
+     * @Description: TODO(找到所有顶点ID ： 找到一度连边顶点 ： 与该点相连的边只有一个)
      */
     private List<Long> filterAnalysisNodeIds(JSONObject graphData) {
         ArrayList<Long> analysisNodeIds = new ArrayList<>();

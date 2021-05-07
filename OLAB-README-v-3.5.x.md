@@ -637,5 +637,12 @@ RETURN olab.schema.auto.cypher(json,100) AS cypher
 // 
 ```
 
-
+## 使用笛卡尔乘积算法
+```
+// 使用笛卡尔乘积算法 【对列表中实体使用指定字段进行分组，并进行笛卡尔乘积运算进行组合】
+// {mapList}:原List
+// {groupField}:列表中对象的分组字段
+RETURN olab.cartesian({mapList},{groupField}) AS cartesianList
+RETURN olab.cartesian([{id:1,name:'a',type:1},{id:2,name:'b',type:1},{id:3,name:'c',type:1},{id:4,name:'d',type:2},{id:5,name:'e',type:3},{id:6,name:'f',type:3}],'type') AS cartesianList
+```
 

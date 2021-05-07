@@ -38,6 +38,11 @@ public class LoopResult {
     private String pathStr;
 
     /**
+     * 拼接的CYPHER语句
+     */
+    private String jointCypher;
+
+    /**
      * 路径属性过滤的数量
      */
     private int propertiesKeySize;
@@ -106,7 +111,8 @@ public class LoopResult {
                 .parallelStream()
                 .map(v -> indexNode.get(Long.parseLong(v)))
                 .collect(Collectors.toList());
-        this.pathStr = appendPathStr(nodeSeqIdList, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+        this.pathStr = pathStr;
+        this.jointCypher = appendPathStr(nodeSeqIdList, directionListMap, idToLabel, nodeIndex, filterNodeMap);
     }
 
     /**
@@ -181,14 +187,14 @@ public class LoopResult {
      * @Description: TODO(是否执行WHERE条件的拼接)
      */
     private boolean appendWhereCondition(StringBuilder nodeFilter, StringBuilder relFilter) {
-        String nodeFilterStr = nodeFilter.toString().replace(" ","")
-                .replace("A","")
-                .replace("N","")
-                .replace("D","");
-        String relFilterStr = relFilter.toString().replace(" ","")
-                .replace("A","")
-                .replace("N","")
-                .replace("D","");
+        String nodeFilterStr = nodeFilter.toString().replace(" ", "")
+                .replace("A", "")
+                .replace("N", "")
+                .replace("D", "");
+        String relFilterStr = relFilter.toString().replace(" ", "")
+                .replace("A", "")
+                .replace("N", "")
+                .replace("D", "");
 
         return (!"".equals(nodeFilterStr)) || (!"".equals(relFilterStr));
     }
@@ -209,26 +215,6 @@ public class LoopResult {
                 .orElse(new HashMap<>());
     }
 
-    /**
-     * @param
-     * @return
-     * @Description: TODO(获取指定ID的MAP)
-     */
-    private Map<String, Object> allRelationshipType(Long id, Long nextId, List<Map<String, Object>> directionListMap) {
-        List<Map<String, Object>> mapList= directionListMap.stream()
-                .filter(v -> {
-                    long startNode = Long.parseLong(String.valueOf(v.get(START_NODE)));
-                    long endNode = Long.parseLong(String.valueOf(v.get(END_NODE)));
-                    return (startNode == id && endNode == nextId) || (endNode == id && startNode == nextId);
-                }).collect(Collectors.toList());
-        /*
-        * mapList的size>1表示节点之间有多条一度路径，需要将此路径扩充到最终生成的完整路径中
-        * 【例如一条五跳连接的路径中，存在两个节点之间有两条一度路径，则最终生成的完整路径为两条】
-        * */
-        return mapList.stream().findFirst()
-                .orElse(new HashMap<>());
-    }
-
     public List<Long> getNodeSeqIdList() {
         return nodeSeqIdList;
     }
@@ -237,9 +223,9 @@ public class LoopResult {
         this.nodeSeqIdList = nodeSeqIdList;
     }
 
-    public String getPathStr() {
-        return pathStr;
-    }
+//    public String getPathStr() {
+//        return pathStr;
+//    }
 
     public void setPathStr(String pathStr) {
         this.pathStr = pathStr;
@@ -261,11 +247,20 @@ public class LoopResult {
         this.paraSeqList = paraSeqList;
     }
 
+    public String getJointCypher() {
+        return jointCypher;
+    }
+
+    public void setJointCypher(String jointCypher) {
+        this.jointCypher = jointCypher;
+    }
+
     @Override
     public String toString() {
         return "LoopResult{" +
                 "nodeSeqIdList=" + nodeSeqIdList +
                 ", pathStr='" + pathStr + '\'' +
+                ", jointCypher='" + jointCypher + '\'' +
                 ", propertiesKeySize=" + propertiesKeySize +
                 ", paraSeqList=" + paraSeqList +
                 '}';

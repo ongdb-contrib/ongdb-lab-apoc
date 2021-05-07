@@ -1,5 +1,6 @@
 package data.lab.ongdb.procedures;
 
+import org.apache.commons.compress.utils.Lists;
 import org.junit.Rule;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -55,11 +56,11 @@ public class FunctionPartitionTest {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         List<Map<String, Object>> replaceListMap = new ArrayList<>();
         Map<String, Object> reMap1 = new HashMap<>();
-        reMap1.put("raw","{url}");
-        reMap1.put("rep","'test-url'");
+        reMap1.put("raw", "{url}");
+        reMap1.put("rep", "'test-url'");
         Map<String, Object> reMap2 = new HashMap<>();
-        reMap2.put("raw","{sql}");
-        reMap2.put("rep","'test-sql'");
+        reMap2.put("raw", "{sql}");
+        reMap2.put("rep", "'test-sql'");
         replaceListMap.add(reMap1);
         replaceListMap.add(reMap2);
 
@@ -77,12 +78,12 @@ public class FunctionPartitionTest {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         List<Map<String, Object>> replaceListMap = new ArrayList<>();
         Map<String, Object> reMap1 = new HashMap<>();
-        reMap1.put("raw","{url}");
-        reMap1.put("rep","'test-url'");
+        reMap1.put("raw", "{url}");
+        reMap1.put("rep", "'test-url'");
         Map<String, Object> reMap2 = new HashMap<>();
-        reMap2.put("raw","{sql}");
-        reMap2.put("rep","'SELECT parent_pcode AS `name`,CONVERT(DATE_FORMAT(hupdatetime,\\'%Y%m%d%H%i%S\\'),UNSIGNED INTEGER) AS hupdatetime FROM MSTR_ORG_PRE'");
-        reMap2.put("escape",true);
+        reMap2.put("raw", "{sql}");
+        reMap2.put("rep", "'SELECT parent_pcode AS `name`,CONVERT(DATE_FORMAT(hupdatetime,\\'%Y%m%d%H%i%S\\'),UNSIGNED INTEGER) AS hupdatetime FROM MSTR_ORG_PRE'");
+        reMap2.put("escape", true);
         replaceListMap.add(reMap1);
         replaceListMap.add(reMap2);
 
@@ -98,7 +99,7 @@ public class FunctionPartitionTest {
     @Test
     public void escape() {
         String str = "CONVERT(DATE_FORMAT(hupdatetime,'%Y%m%d%H%i%S'),UNSIGNED INTEGER)";
-        System.out.println(str.replace("'","\\'"));
+        System.out.println(str.replace("'", "\\'"));
     }
 
     @Test
@@ -110,6 +111,64 @@ public class FunctionPartitionTest {
         hashMap.put("string", null);
         Result result = db.execute("RETURN olab.escape({string}) AS value", hashMap);
         String string = (String) result.next().get("value");
+        System.out.println(string);
+    }
+
+    @Test
+    public void cartesian() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        List<Map<String, Object>> modelList = Lists.newArrayList();
+        Map<String, Object> map1 = new HashMap<>();
+        Map<String, Object> map2 = new HashMap<>();
+        Map<String, Object> map3 = new HashMap<>();
+        Map<String, Object> map4 = new HashMap<>();
+        Map<String, Object> map5 = new HashMap<>();
+        Map<String, Object> map6 = new HashMap<>();
+        Map<String, Object> map7 = new HashMap<>();
+
+        map1.put("id",1);
+        map1.put("name","a");
+        map1.put("type",1);
+
+        map2.put("id",2);
+        map2.put("name","b");
+        map2.put("type",1);
+
+        map3.put("id",3);
+        map3.put("name","c");
+        map3.put("type",1);
+
+        map4.put("id",4);
+        map4.put("name","d");
+        map4.put("type",2);
+
+        map5.put("id",5);
+        map5.put("name","e");
+        map5.put("type",3);
+
+        map6.put("id",6);
+        map6.put("name","f");
+        map6.put("type",3);
+
+        map7.put("id",7);
+        map7.put("name","g");
+        map7.put("type",3);
+
+        modelList.add(map1);
+        modelList.add(map2);
+        modelList.add(map3);
+
+        modelList.add(map4);
+
+        modelList.add(map5);
+        modelList.add(map6);
+        modelList.add(map7);
+
+        Map<String, Object> hashMap = new HashMap<>();
+        hashMap.put("mapList", modelList);
+        hashMap.put("groupField", "type");
+        Result result = db.execute("RETURN olab.cartesian({mapList},{groupField}) AS cartesianList", hashMap);
+        List<List<Map<String, Object>>> string = (List<List<Map<String, Object>>>) result.next().get("cartesianList");
         System.out.println(string);
     }
 }
