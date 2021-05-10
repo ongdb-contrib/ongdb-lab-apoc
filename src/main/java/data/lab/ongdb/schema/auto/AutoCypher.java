@@ -280,22 +280,25 @@ public class AutoCypher {
     /**
      * @param graphPaths:STRING类型路径列表
      * @param indexNode:索引与节点的ID对应关系
-     * @param directionListMap:方向对应关系    包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
+     * @param reFDirectionListMap:方向对应关系 包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
      * @param idToLabel:索引节点ID对应的节点标签MAP
      * @param nodeIndex:节点ID和索引ID对应关系
      * @param filterNodeMap:属性过滤器
      * @return
      * @Description: TODO(拿到路径列表 - 并将索引ID替换为节点ID)
      */
-    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> reFDirectionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
         /*
          * 拿到路径列表-并将索引ID替换为节点ID
          * */
         List<LoopResult> loopResultList = new ArrayList<>();
         for (String pathStr : graphPaths) {
+
             /*
              * directionListMap使用开始结束节点，还有关系类型排重统计 KEY:startNode-id-endNode-id VALUE:directionListMapList
+             * 过滤出与当前路径相关的directionListMap
              * */
+            List<Map<String, Object>> directionListMap = filter(reFDirectionListMap, pathStr, indexNode);
             List<AuDirection> mapList = countDirectionListMap(directionListMap);
 
             /*
@@ -306,15 +309,108 @@ public class AutoCypher {
              * 5、生成LoopResult
              * 6、排重LoopResult List之后返回
              * */
-            int num = mapList.stream().map(v -> v.getSize()).reduce(1, (x, y) -> x * y);
-            for (int i = 0; i < num; i++) {
-                List<String[]> cartesianList = cartesianList(mapList);
-                List<Map<String, Object>> resetMapList = resetMapList(mapList, cartesianList);
-                LoopResult loopResult = new LoopResult(pathStr, indexNode, resetMapList, idToLabel, nodeIndex, filterNodeMap);
-                loopResultList.add(loopResult);
+
+            /*
+             * 笛卡尔路径组合
+             * 原始map经过统计之后 ， 生成笛卡尔积列表组合
+             *
+             * */
+            List<String[]> cartesianList = cartesianList(mapList);
+            if (!cartesianList.isEmpty()) {
+                int num = cartesianList.size();
+                for (int i = 0; i < num; i++) {
+                    /*
+                     * 原始map经过统计之后 ， 使用笛卡尔积列表组合生成新的directionListMap【每次使用时多条边的只留一条】
+                     * 使用笛卡尔积列表对SIZE大于1的对象进行筛选
+                     * */
+                    List<Map<String, Object>> resetMapList = resetMapList(mapList, cartesianList.get(i));
+                    LoopResult loopResult = new LoopResult(pathStr, indexNode, resetMapList, idToLabel, nodeIndex, filterNodeMap);
+                    loopResultList.add(loopResult);
+                }
+            } else {
+                /*
+                 * 列表中有没有SIZE大于1的元素，如果有的话，增加一个循环
+                 * */
+                List<AuDirection> rawMapList = mapList.stream().filter(v -> v.getSize() > 1).collect(Collectors.toList());
+                if (rawMapList.size() > 0) {
+                    List<AuDirection> listMap = rawMapList.get(0).listMap;
+                    for (AuDirection auDirection : listMap) {
+                        /*
+                         * 重置directionListMap
+                         * */
+                        List<Map<String, Object>> reDirectionListMap = reDirectionListMap(auDirection, directionListMap);
+                        LoopResult loopResult = new LoopResult(pathStr, indexNode, reDirectionListMap, idToLabel, nodeIndex, filterNodeMap);
+                        loopResultList.add(loopResult);
+                    }
+                } else {
+                    /*
+                     * 拿到路径列表-并将索引ID替换为节点ID
+                     * */
+                    LoopResult loopResult = new LoopResult(pathStr, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+                    loopResultList.add(loopResult);
+                }
             }
         }
         return loopResultList.stream().distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * @param reFDirectionListMap:方向对应关系 包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
+     * @param pathStr:路径串
+     * @param indexNode:索引与节点的ID对应关系
+     * @return
+     * @Description: TODO
+     */
+    private List<Map<String, Object>> filter(List<Map<String, Object>> reFDirectionListMap, String pathStr, HashMap<Long, Long> indexNode) {
+        List<Map<String, Object>> directionListMap = new ArrayList<>();
+        String[] pathElements = pathStr.split(PATH_REL_JOINT);
+        for (int i = 0; i < pathElements.length - 1; i++) {
+            String startNode = String.valueOf(indexNode.get(Long.parseLong(pathElements[i])));
+            String endNode = String.valueOf(indexNode.get(Long.parseLong(pathElements[i + 1])));
+            List<Map<String, Object>> maps = reFDirectionListMap.stream().filter(v -> {
+                String startNodeMap = String.valueOf(v.get(START_NODE));
+                String endNodeMap = String.valueOf(v.get(END_NODE));
+                return (startNode.equals(startNodeMap) && endNode.equals(endNodeMap)) || (startNode.equals(endNodeMap) && endNode.equals(startNodeMap));
+            }).collect(Collectors.toList());
+            directionListMap.addAll(maps);
+        }
+        return directionListMap;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(在directionListMap中移除auDirection)
+     */
+    private List<Map<String, Object>> reDirectionListMap(AuDirection auDirection, List<Map<String, Object>> directionListMap) {
+        List<Map<String, Object>> reDirectionListMap = new ArrayList<>();
+        for (Map<String, Object> map : directionListMap) {
+            String startNode = auDirection.getStartNode();
+            String endNode = auDirection.getEndNode();
+            String type = auDirection.getType();
+            String startNodeMap = String.valueOf(map.get(START_NODE));
+            String endNodeMap = String.valueOf(map.get(END_NODE));
+            String typeMap = String.valueOf(map.get(TYPE));
+            if (!(startNode.equals(startNodeMap) && endNode.equals(endNodeMap) && type.equals(typeMap))) {
+                reDirectionListMap.add(map);
+            }
+        }
+        return reDirectionListMap;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(AuDirection对象转为MAP对象)
+     */
+    private Map<String, Object> packMap(AuDirection auDirection) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(START_NODE, auDirection.getStartNode());
+        map.put(END_NODE, auDirection.getEndNode());
+        map.put(TYPE, auDirection.getType());
+        map.put(PROPERTIES_FILTER, auDirection.getPropertiesFilter());
+        map.put(ES_FILTER, auDirection.getEsFilter());
+        return map;
     }
 
     /**
@@ -323,8 +419,12 @@ public class AutoCypher {
      * @Description: TODO(原始map经过统计之后 ， 生成笛卡尔积列表组合)
      */
     private List<String[]> cartesianList(List<AuDirection> mapList) {
+
         // 列表中的数组长度-表示mapList中size>1的元素的个数
         int greaterOneSize = Math.toIntExact(mapList.stream().filter(v -> v.getSize() > 1).count());
+        if (greaterOneSize < 2) {
+            return new ArrayList<>();
+        }
 
         List<AuDirection> reMapList = mapList.stream().filter(v -> v.getSize() > 1).collect(Collectors.toList());
         Map<Object, List<Map<String, Object>>> modelMap = new HashMap<>();
@@ -339,23 +439,49 @@ public class AutoCypher {
             modelMap.put(i, conMapListTwo);
         }
         List<List<Map<String, Object>>> descartes = new ArrayUtils().descartes(modelMap);
-        return descartes.stream().map(v -> {
-            List<String> list = v.stream().map(para -> String.valueOf(para.get("seq"))).collect(Collectors.toList());
-            return list.toArray(new String[list.size()]);
-        }).collect(Collectors.toList());
+        return descartes.stream()
+                .map(v -> v.stream().map(para -> String.valueOf(para.get("seq"))).toArray(String[]::new))
+                .collect(Collectors.toList());
     }
 
     /**
      * @param mapList:mapList包含size字段、listMap字段
-     * @param cartesianList:size>1的map组合序列【序列为mapList中listMap字段的元素索引】【表示本次生成LoopResult使用哪个索引的元素】
+     * @param cartesian:size>1的map组合序列【序列为mapList中listMap字段的元素索引】【表示本次生成LoopResult使用哪个索引的元素】【本次笛卡尔积序列】
      * @return
      * @Description: TODO(原始map经过统计之后 ， 使用笛卡尔积列表组合生成新的directionListMap)
      */
-    private List<Map<String, Object>> resetMapList(List<AuDirection> mapList, List<String[]> cartesianList) {
-        return null;
+    private List<Map<String, Object>> resetMapList(List<AuDirection> mapList, String[] cartesian) {
+
+        List<AuDirection> reMapList = mapList.stream().filter(v -> v.getSize() > 1).collect(Collectors.toList());
+        List<AuDirection> list = mapList.stream().filter(v -> v.getSize() < 2).collect(Collectors.toList());
+
+        int num = reMapList.size();
+        for (int i = 0; i < num; i++) {
+            AuDirection auDirection = reMapList.get(i).getListMap().get(Integer.parseInt(cartesian[i]));
+            /*
+             * 移除掉与当前对象重复的元素，并将选举出的元素添加到列表
+             * */
+            list = removeAuDirection(list, auDirection);
+            list.add(auDirection);
+        }
+
+        return list.stream().map(this::packMap).collect(Collectors.toList());
     }
 
-    //
+    /**
+     * @param
+     * @return
+     * @Description: TODO(从list中移除与auDirection对象重复的元素)
+     */
+    private List<AuDirection> removeAuDirection(List<AuDirection> list, AuDirection auDirection) {
+        return list.stream().filter(v -> !auDirection.equals(v)).collect(Collectors.toList());
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(directionListMap使用开始结束节点 ， 还有关系类型排重统计 KEY : startNode - id - endNode - id VALUE : directionListMapList)
+     */
     private List<AuDirection> countDirectionListMap(List<Map<String, Object>> directionListMap) {
         List<AuDirection> mapList = new ArrayList<>();
         for (Map<String, Object> map : directionListMap) {
@@ -367,11 +493,14 @@ public class AutoCypher {
                     String.valueOf(map.get(ES_FILTER))
             );
             if (mapList.contains(auDirection)) {
-                int size = auDirection.getSize() + 1;
-                auDirection.setSize(size);
-                List<AuDirection> listMap = getAuDirection(mapList, auDirection);
-                listMap.add(auDirection);
+                /*
+                 * 封装数据
+                 * */
+                getAuDirection(mapList, auDirection);
             } else {
+                /*
+                 * 初始化列表
+                 * */
                 auDirection.setSize(1);
                 List<AuDirection> listMap = new ArrayList<>();
                 listMap.add(auDirection);
@@ -382,13 +511,19 @@ public class AutoCypher {
         return mapList;
     }
 
-    private List<AuDirection> getAuDirection(List<AuDirection> mapList, AuDirection auDirection) {
+    /**
+     * @param mapList:列表
+     * @param auDirection:当前对象
+     * @return
+     * @Description: TODO(封装数据 - 当前对象合并到列表)
+     */
+    private void getAuDirection(List<AuDirection> mapList, AuDirection auDirection) {
         for (AuDirection direction : mapList) {
             if (direction.equals(auDirection)) {
-                return direction.getListMap();
+                direction.setSize(direction.getSize() + 1);
+                direction.getListMap().add(auDirection);
             }
         }
-        return new ArrayList<>();
     }
 
     /**

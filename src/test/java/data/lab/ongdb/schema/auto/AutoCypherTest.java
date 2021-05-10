@@ -451,10 +451,11 @@ public class AutoCypherTest {
     public void autoRelCypher() {
         AutoCypher autoCypher = new AutoCypher();
 //        String dir="auto-test-1";
-        String dir="auto-test-2";
+//        String dir="auto-test-2";
+        String dir = "auto-test-3";
         // 入参JSON【暂不支持属性间布尔或条件】
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), -1);
-        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 3);
+        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 3);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), -1);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), -1);
@@ -517,11 +518,11 @@ public class AutoCypherTest {
     public void autoCypher() {
         GraphDatabaseService db = neo4j.getGraphDatabaseService();
         Map<String, Object> hashMap = new HashMap<>();
-        String dir="auto-test-1";
+        String dir = "auto-test-1";
         hashMap.put("JSON", FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"));
         hashMap.put("LIMIT", 100);
         // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
-        Result result = db.execute("RETURN olab.schema.auto.cypher({JSON},{LIMIT}) AS cypher", hashMap);
+        Result result = db.execute("RETURN olab.schema.auto.cypher({JSON},{LIMIT}) AS CYPHER", hashMap);
         String cypher = (String) result.next().get("cypher");
         System.out.println(cypher);
     }
@@ -612,8 +613,6 @@ public class AutoCypherTest {
             System.out.println(cypher);
         }
     }
-
-
 
 
 }

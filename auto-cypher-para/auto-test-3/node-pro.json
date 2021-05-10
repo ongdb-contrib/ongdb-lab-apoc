@@ -1,0 +1,63 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "labels": [
+          "公司"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "labels": [
+          "公司"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "labels": [
+          "公司"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "labels": [
+          "行业"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      }
+    ]
+  }
+}
+

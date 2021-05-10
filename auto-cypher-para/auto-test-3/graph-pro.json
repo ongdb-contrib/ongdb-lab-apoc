@@ -1,0 +1,176 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "labels": [
+          "公司"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "labels": [
+          "公司"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "labels": [
+          "公司"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "labels": [
+          "行业"
+        ],
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "1",
+        "type": "持股",
+        "startNode": "1",
+        "endNode": "2",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "type": "担保",
+        "startNode": "1",
+        "endNode": "2",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "type": "属于",
+        "startNode": "1",
+        "endNode": "4",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "type": "持股",
+        "startNode": "1",
+        "endNode": "3",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "5",
+        "type": "属于",
+        "startNode": "3",
+        "endNode": "4",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "6",
+        "type": "持股",
+        "startNode": "2",
+        "endNode": "3",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "type": "担保",
+        "startNode": "2",
+        "endNode": "3",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      },
+      {
+        "id": "8",
+        "type": "担保",
+        "startNode": "1",
+        "endNode": "3",
+        "properties_filter": [
+          {
+            "hcreatetime": "{var}.hcreatetime='20201116032333'"
+          },
+          {
+            "count": "{var}.count>=0 AND {var}.count<=10"
+          }
+        ]
+      }
+    ]
+  }
+}

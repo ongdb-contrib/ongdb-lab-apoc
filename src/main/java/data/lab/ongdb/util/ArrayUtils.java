@@ -70,13 +70,6 @@ public class ArrayUtils {
     }
 
     /**
-     *
-     * @param dimensionValue 原List
-     * @param result         通过乘积转化后的数组
-     * @param layer          中间参数
-     * @param currentList    中间参数
-     */
-    /**
      * @param dimensionValue 原List
      * @param result         通过乘积转化后的数组
      * @param layer          中间参数
