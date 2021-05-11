@@ -55,7 +55,7 @@ public class AutoCypher {
     private final static String ID = "id";
     private final static String PATH_REL_JOINT = "->";
 
-    /*
+    /**
      * 连接节点的子查询
      * */
     //private final static String CYPHER_JOINT_ALL = "UNION ALL";
@@ -66,7 +66,7 @@ public class AutoCypher {
     private final static String TYPE = "type";
     private final static String LABELS = "labels";
 
-    /*
+    /**
      * 过滤器
      * */
     private final static String PROPERTIES_FILTER = "properties_filter";
@@ -464,7 +464,6 @@ public class AutoCypher {
             list = removeAuDirection(list, auDirection);
             list.add(auDirection);
         }
-
         return list.stream().map(this::packMap).collect(Collectors.toList());
     }
 
@@ -489,8 +488,8 @@ public class AutoCypher {
                     String.valueOf(map.get(START_NODE)),
                     String.valueOf(map.get(END_NODE)),
                     String.valueOf(map.get(TYPE)),
-                    String.valueOf(map.get(PROPERTIES_FILTER)),
-                    String.valueOf(map.get(ES_FILTER))
+                    "null".equals(String.valueOf(map.get(PROPERTIES_FILTER))) ? null : String.valueOf(map.get(PROPERTIES_FILTER)),
+                    "null".equals(String.valueOf(map.get(ES_FILTER))) ? null : String.valueOf(map.get(ES_FILTER))
             );
             if (mapList.contains(auDirection)) {
                 /*

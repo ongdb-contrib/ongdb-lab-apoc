@@ -574,6 +574,9 @@ CALL olab.schema.loop(graphData) YIELD loopResultList RETURN SIZE(loopResultList
 ```
 
 ## 自动生成子图匹配的CYPHER语句
+>olab.schema.auto.cypher
+>- 【不支持属性过滤器】支持从CYPHER生成CYPHER，此方式只支持生成匹配图模式的CYPHER；
+>- 【支持属性过滤器】支持从json生成CYPHER，此方式支持生成匹配图模式的CYPHER、属性过滤的CYPHER、ES指标过滤的CYPHER
 - 安装函数
 ```
 // 安装函数：custom.es.result.bool
@@ -630,11 +633,40 @@ RETURN olab.schema.auto.cypher(json,100) AS cypher
 ```
 ```
 // 测试环路子图
-MATCH p0=(n:Movie)<--(p:Person)-->(n:Movie) WITH p0 
+MATCH p0=(n:Movie)<-[:WROTE]-(p:Person)-[:ACTED_IN]->(n:Movie) WITH p0 
 WITH olab.convert.json([p0]) AS json LIMIT 1
 RETURN olab.schema.auto.cypher(json,100) AS cypher
 // RESULT：
-// 
+// MATCH p0=(n0:Movie)<-[r1to0:WROTE]-(n1:Person) WITH n0,n1,p0 
+// MATCH p1=(n0:Movie)<-[r1to0:ACTED_IN]-(n1:Person) WITH n0,n1,p0,p1 
+// RETURN {graph:[p0,p1]} AS graph LIMIT 100
+```
+```
+// 测试多环路子图
+CREATE (n1:公司) SET n1.name='公司' WITH n1
+CREATE (n2:公司) SET n2.name='公司' WITH n1,n2
+CREATE (n3:公司) SET n3.name='公司' WITH n1,n2,n3
+CREATE (n4:行业) SET n4.name='行业' WITH n1,n2,n3,n4
+CREATE p1=(n1)-[:持股]->(n2) WITH n1,n2,n3,n4,p1
+CREATE p2=(n1)-[:担保]->(n2) WITH n1,n2,n3,n4,p1,p2
+CREATE p3=(n1)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3
+CREATE p4=(n1)-[:持股]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4
+CREATE p5=(n2)-[:持股]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5
+CREATE p6=(n3)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6
+CREATE p7=(n2)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7
+CREATE p8=(n1)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7,p8
+WITH olab.convert.json([p1,p2,p3,p4,p5,p6,p7,p8]) AS json
+RETURN olab.schema.auto.cypher(json,100) AS cypher
+// RESULT：
+// MATCH p0=(n0:公司)-[r0to3:属于]->(n3:行业)<-[r2to3:属于]-(n2:公司)<-[r1to2:担保]-(n1:公司) WITH n0,n3,n2,n1,p0 
+// MATCH p1=(n0:公司)-[r0to3:属于]->(n3:行业)<-[r2to3:属于]-(n2:公司)<-[r1to2:持股]-(n1:公司) WITH n0,n3,n2,n1,p0,p1 
+// MATCH p2=(n0:公司)-[r0to2:持股]->(n2:公司)<-[r1to2:持股]-(n1:公司) WITH n0,n3,n2,n1,p0,p1,p2 
+// MATCH p3=(n0:公司)-[r0to2:持股]->(n2:公司)<-[r1to2:担保]-(n1:公司) WITH n0,n3,n2,n1,p0,p1,p2,p3 
+// MATCH p4=(n0:公司)-[r0to2:担保]->(n2:公司)<-[r1to2:持股]-(n1:公司) WITH n0,n3,n2,n1,p0,p1,p2,p3,p4 
+// MATCH p5=(n0:公司)-[r0to2:担保]->(n2:公司)<-[r1to2:担保]-(n1:公司) WITH n0,n3,n2,n1,p0,p1,p2,p3,p4,p5 
+// MATCH p6=(n0:公司)-[r0to1:担保]->(n1:公司) WITH n0,n3,n2,n1,p0,p1,p2,p3,p4,p5,p6 
+// MATCH p7=(n0:公司)-[r0to1:持股]->(n1:公司) WITH n0,n3,n2,n1,p0,p1,p2,p3,p4,p5,p6,p7 
+// RETURN {graph:[p0,p1,p2,p3,p4,p5,p6,p7]} AS graph LIMIT 100
 ```
 
 ## 使用笛卡尔乘积算法
