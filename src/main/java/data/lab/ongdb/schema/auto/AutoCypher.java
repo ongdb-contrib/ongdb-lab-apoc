@@ -488,8 +488,8 @@ public class AutoCypher {
                     String.valueOf(map.get(START_NODE)),
                     String.valueOf(map.get(END_NODE)),
                     String.valueOf(map.get(TYPE)),
-                    "null".equals(String.valueOf(map.get(PROPERTIES_FILTER))) ? null : String.valueOf(map.get(PROPERTIES_FILTER)),
-                    "null".equals(String.valueOf(map.get(ES_FILTER))) ? null : String.valueOf(map.get(ES_FILTER))
+                    map.get(PROPERTIES_FILTER) instanceof JSONArray?(JSONArray)map.get(PROPERTIES_FILTER):null,
+                    map.get(ES_FILTER) instanceof JSONArray?(JSONArray)map.get(ES_FILTER):null
             );
             if (mapList.contains(auDirection)) {
                 /*
@@ -1306,12 +1306,12 @@ public class AutoCypher {
         private String startNode;
         private String endNode;
         private String type;
-        private String propertiesFilter;
-        private String esFilter;
+        private JSONArray propertiesFilter;
+        private JSONArray esFilter;
         private int size;
         private List<AuDirection> listMap;
 
-        public AuDirection(String startNode, String endNode, String type, String propertiesFilter, String esFilter) {
+        public AuDirection(String startNode, String endNode, String type, JSONArray propertiesFilter, JSONArray esFilter) {
             this.startNode = startNode;
             this.endNode = endNode;
             this.type = type;
@@ -1319,7 +1319,7 @@ public class AutoCypher {
             this.esFilter = esFilter;
         }
 
-        public AuDirection(String startNode, String endNode, String type, String propertiesFilter, String esFilter, int size, List<AuDirection> listMap) {
+        public AuDirection(String startNode, String endNode, String type, JSONArray propertiesFilter, JSONArray esFilter, int size, List<AuDirection> listMap) {
             this.startNode = startNode;
             this.endNode = endNode;
             this.type = type;
@@ -1353,19 +1353,19 @@ public class AutoCypher {
             this.type = type;
         }
 
-        public String getPropertiesFilter() {
+        public JSONArray getPropertiesFilter() {
             return propertiesFilter;
         }
 
-        public void setPropertiesFilter(String propertiesFilter) {
+        public void setPropertiesFilter(JSONArray propertiesFilter) {
             this.propertiesFilter = propertiesFilter;
         }
 
-        public String getEsFilter() {
+        public JSONArray getEsFilter() {
             return esFilter;
         }
 
-        public void setEsFilter(String esFilter) {
+        public void setEsFilter(JSONArray esFilter) {
             this.esFilter = esFilter;
         }
 
