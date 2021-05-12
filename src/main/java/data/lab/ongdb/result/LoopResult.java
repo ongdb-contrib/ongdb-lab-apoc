@@ -167,13 +167,13 @@ public class LoopResult {
         if (appendWhereCondition(nodeFilter, relFilter)) {
             String relFilterStr = relFilter.substring(0, relFilter.length() - 5);
             builder.append(" WHERE ");
-            if (nodeFilter.length() > 1 && relFilterStr.length() > 1) {
+            if (filterInvalidStr(nodeFilter).length() > 1 && filterInvalidStr(relFilterStr).length() > 1) {
                 builder.append(nodeFilter);
                 builder.append(" AND ");
                 builder.append(relFilterStr);
-            } else if (nodeFilter.length() > 1) {
+            } else if (filterInvalidStr(nodeFilter).length() > 1) {
                 builder.append(nodeFilter);
-            } else if (relFilter.length() > 1) {
+            } else if (filterInvalidStr(relFilterStr).length() > 1) {
                 builder.append(relFilter);
             }
         }
@@ -187,16 +187,19 @@ public class LoopResult {
      * @Description: TODO(是否执行WHERE条件的拼接)
      */
     private boolean appendWhereCondition(StringBuilder nodeFilter, StringBuilder relFilter) {
-        String nodeFilterStr = nodeFilter.toString().replace(" ", "")
-                .replace("A", "")
-                .replace("N", "")
-                .replace("D", "");
-        String relFilterStr = relFilter.toString().replace(" ", "")
-                .replace("A", "")
-                .replace("N", "")
-                .replace("D", "");
+        return (!"".equals(filterInvalidStr(nodeFilter))) || (!"".equals(filterInvalidStr(relFilter)));
+    }
 
-        return (!"".equals(nodeFilterStr)) || (!"".equals(relFilterStr));
+    /**
+     * @param
+     * @return
+     * @Description: TODO(清除字符串中的 ‘ AND ’ 字符)
+     */
+    private String filterInvalidStr(Object object) {
+        return object.toString().replace(" ", "")
+                .replace("A", "")
+                .replace("N", "")
+                .replace("D", "");
     }
 
     /**
