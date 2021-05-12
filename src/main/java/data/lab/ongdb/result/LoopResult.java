@@ -140,32 +140,42 @@ public class LoopResult {
             this.paraSeqList.add(nodePara.replace("(", "").replace(")", "").split(":")[0]);
 
             JSONObject nodeFilterObject = filterNodeMap.get(idIdx);
-            nodeFilter.append(FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject));
+            String nodePropertiesFilter = FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject);
+            nodeFilter.append(nodePropertiesFilter);
             this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
             if (i < size - 1) {
-                nodeFilter.append(" AND ");
+                // 拼接AND时增加一个判断逻辑
+                if (nodePropertiesFilter.length() > 1) {
+                    nodeFilter.append(" AND ");
+                }
                 long nextId = nodeSeqIdList.get(i + 1);
                 long nextIdIdx = nodeIndex.get(nextId);
                 Map<String, Object> map = relationshipType(id, nextId, directionListMap);
                 String relationshipType = String.valueOf(map.get(TYPE));
                 long startNode = Long.parseLong(String.valueOf(map.get(START_NODE)));
                 long endNode = Long.parseLong(String.valueOf(map.get(END_NODE)));
+                String relPropertiesFilter;
                 if (startNode == id && endNode == nextId) {
                     String relPara = "r" + idIdx + "to" + nextIdIdx;
-                    relFilter.append(FilterUtil.propertiesFilter(relPara, map));
+                    relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
+                    relFilter.append(relPropertiesFilter);
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
                     builder.append("-[").append(relPara).append(":").append(relationshipType).append("]->");
                 } else {
                     String relPara = "r" + nextIdIdx + "to" + idIdx;
-                    relFilter.append(FilterUtil.propertiesFilter(relPara, map));
+                    relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
+                    relFilter.append(relPropertiesFilter);
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
                     builder.append("<-[").append(relPara).append(":").append(relationshipType).append("]-");
                 }
-                relFilter.append(" AND ");
+                // 拼接AND时增加一个判断逻辑
+                if (relPropertiesFilter.length() > 1) {
+                    relFilter.append(" AND ");
+                }
             }
         }
         if (appendWhereCondition(nodeFilter, relFilter)) {
-            String relFilterStr = relFilter.substring(0, relFilter.length() - 5);
+            String relFilterStr = relFilter.length() > 5 ? relFilter.substring(0, relFilter.length() - 5) : "";
             builder.append(" WHERE ");
             if (filterInvalidStr(nodeFilter).length() > 1 && filterInvalidStr(relFilterStr).length() > 1) {
                 builder.append(nodeFilter);
@@ -177,8 +187,12 @@ public class LoopResult {
                 builder.append(relFilter);
             }
         }
-        builder.append(" RETURN {var.p} ");
-        return builder.toString();
+        String cutCypher = builder.substring(builder.length() - 4, builder.length());
+        if (cutCypher.contains("AND")) {
+            return builder.substring(0, builder.length() - 4) + " RETURN {var.p} ";
+        } else {
+            return builder.append(" RETURN {var.p} ").toString();
+        }
     }
 
     /**
