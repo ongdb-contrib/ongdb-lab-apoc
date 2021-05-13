@@ -722,7 +722,7 @@ public class AutoCypher {
      */
     @UserFunction(name = "olab.schema.auto.cypher")
     @Description("```\n" +
-            "RETURN olab.schema.auto.cypher({JSON},{LIMIT}) AS cypher\n" +
+            "RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT}) AS cypher\n" +
             "```\n" +
             "```\n" +
             "输入：\n" +
