@@ -57,7 +57,7 @@ public class AutoCypher {
 
     /**
      * 连接节点的子查询
-     * */
+     */
     //private final static String CYPHER_JOINT_ALL = "UNION ALL";
     private final static String CYPHER_JOINT = "UNION";
 
@@ -68,7 +68,7 @@ public class AutoCypher {
 
     /**
      * 过滤器
-     * */
+     */
     private final static String PROPERTIES_FILTER = "properties_filter";
     private final static String ES_FILTER = "es_filter";
 
@@ -488,8 +488,8 @@ public class AutoCypher {
                     String.valueOf(map.get(START_NODE)),
                     String.valueOf(map.get(END_NODE)),
                     String.valueOf(map.get(TYPE)),
-                    map.get(PROPERTIES_FILTER) instanceof JSONArray?(JSONArray)map.get(PROPERTIES_FILTER):null,
-                    map.get(ES_FILTER) instanceof JSONArray?(JSONArray)map.get(ES_FILTER):null
+                    map.get(PROPERTIES_FILTER) instanceof JSONArray ? (JSONArray) map.get(PROPERTIES_FILTER) : null,
+                    map.get(ES_FILTER) instanceof JSONArray ? (JSONArray) map.get(ES_FILTER) : null
             );
             if (mapList.contains(auDirection)) {
                 /*
@@ -731,8 +731,9 @@ public class AutoCypher {
             "    过滤器设计：传入查询碎片直接拼接查询碎片\n" +
             "输出：拼接好的CYPHER语句\n" +
             "```")
-    public String cypher(@Name("json") String json, @Name(value = "limit", defaultValue = "100") long limit) {
-
+    public String cypher(@Name("json") String json, @Name(value = "limit", defaultValue = "0") long skip, @Name(value = "limit", defaultValue = "100") long limit) {
+        skip = skip < 0 ? 0 : skip;
+        limit = limit < 1 ? 1 : limit;
         /*
          * 是否只包含节点：
          *   是：封装节点的查询【多个节点返回UNION ALL语句】
@@ -768,12 +769,12 @@ public class AutoCypher {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " field!");
             }
             // 单节点拼接
-            return cypherAppendJustNodes(nodes, limit);
+            return cypherAppendJustNodes(nodes, skip, limit);
         } else {
             if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
             }
-            return cypherAppendNotJustNodes(graphData, limit);
+            return cypherAppendNotJustNodes(graphData, skip, limit);
         }
     }
 
@@ -782,7 +783,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO(图对象转换为CYPHER语句)
      */
-    private String cypherAppendNotJustNodes(JSONObject graphData, long limit) {
+    private String cypherAppendNotJustNodes(JSONObject graphData, long skip, long limit) {
         /*
          * 1、确定顶点【一度连边顶点】
          * 2、检测graphData是一个连通图【求弱连通分量】
@@ -841,10 +842,82 @@ public class AutoCypher {
          * 拼接的路径列表【路径拼接DEBUG】
          * */
         List<LoopResult> graphNodeIdSeqPaths = replaceIndexId(graphPaths, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+
         /*
          * 根据查询代码自动优化拼接多条path
          * */
-        return generateCypher(graphNodeIdSeqPaths, limit);
+        return generateCypher(graphNodeIdSeqPaths, skip, limit);
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(优化路径 【 发现父级路径的子路径 ， 自动剔除 】)
+     */
+    private List<LoopResult> autoRemove(List<LoopResult> rawGraphNodeIdSeqPaths) {
+        List<LoopResult> paths = new ArrayList<>();
+        /*
+         * 设置路径骨架
+         * */
+        List<LoopResult> resetRawGraphNodeIdSeqPaths = rawGraphNodeIdSeqPaths.stream()
+                .peek(v -> v.setSkeletonPathStr(findPathSkeleton(v.getJointCypher()))).collect(Collectors.toList());
+        /*
+         * 发现父级路径的子路径，自动剔除【字符串归并算法】
+         * */
+        int size = resetRawGraphNodeIdSeqPaths.size();
+        for (int i = 0; i < size; i++) {
+            LoopResult loopResult = resetRawGraphNodeIdSeqPaths.get(i);
+            if (i == 0) {
+                paths.add(loopResult);
+            } else {
+                if (!isContainsInResetPathsSizeMore2(resetRawGraphNodeIdSeqPaths, loopResult)) {
+                    paths.add(loopResult);
+                }
+            }
+        }
+        return paths;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(loopResult中路径骨架在resetRawGraphNodeIdSeqPaths是否包含两条以上 ， 如果是则返回TRUE)
+     */
+    private boolean isContainsInResetPathsSizeMore2(List<LoopResult> resetRawGraphNodeIdSeqPaths, LoopResult loopResult) {
+        int count = 0;
+        for (LoopResult result : resetRawGraphNodeIdSeqPaths) {
+            String ske1 = result.getSkeletonPathStr();
+            String curSke = loopResult.getSkeletonPathStr();
+            if (ske1.contains(curSke)) {
+                count++;
+            }
+        }
+        return count > 1;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(提取路径骨架)
+     */
+    protected String findPathSkeleton(String jointCypher) {
+        StringBuilder builder = null;
+        char[] chars = jointCypher.toCharArray();
+        int blankCount = 0;
+        for (char ch : chars) {
+            if (Character.isSpaceChar(ch)) {
+                blankCount++;
+                if (blankCount > 1) {
+                    break;
+                }
+            }
+            if (ch == '=') {
+                builder = new StringBuilder();
+            } else if (builder != null) {
+                builder.append(ch);
+            }
+        }
+        return builder != null ? builder.toString() : null;
     }
 
     /**
@@ -877,12 +950,12 @@ public class AutoCypher {
      * @return
      * @Description: TODO({ var.p } - 生成子图模式匹配语句)
      */
-    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long limit) {
+    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long skip, long limit) {
         /*
          * 长路径优先
          * 过滤属性数量优先
          * */
-        List<LoopResult> graphNodeIdSeqPathsSort = graphNodeIdSeqPaths.stream()
+        List<LoopResult> rawGraphNodeIdSeqPathsSort = graphNodeIdSeqPaths.stream()
                 // 路径长度排序与属性数量排序
                 .sorted((v1, v2) -> {
                     Integer v1Int = v1.getNodeSeqIdList().size() + v1.getPropertiesKeySize();
@@ -890,6 +963,11 @@ public class AutoCypher {
                     return v2Int.compareTo(v1Int);
                 })
                 .collect(Collectors.toList());
+
+        /*
+         * 路径编码之前优化路径【发现父级路径的子路径，自动剔除】
+         * */
+        List<LoopResult> graphNodeIdSeqPathsSort = autoRemove(rawGraphNodeIdSeqPathsSort);
 
         /*
          * 对路径进行编码：替换`{var.p}`变量标记
@@ -919,7 +997,7 @@ public class AutoCypher {
             builder.append(path.replace("RETURN " + para, "WITH " + withPara));
             builder.append("\n");
         }
-        builder.append(appendReturnGraph(pathParas.toString(), limit));
+        builder.append(appendReturnGraph(pathParas.toString(), skip, limit));
         /*
          * 拼接序列中的CYPHER
          * */
@@ -968,9 +1046,9 @@ public class AutoCypher {
      * @return
      * @Description: TODO(准备RETURN GRAPH)
      */
-    private String appendReturnGraph(String pathParas, long limit) {
+    private String appendReturnGraph(String pathParas, long skip, long limit) {
         if (limit > 0) {
-            return "RETURN {graph:[" + pathParas + "]} AS graph LIMIT " + limit;
+            return "RETURN {graph:[" + pathParas + "]} AS graph SKIP " + skip + " LIMIT " + limit;
         } else {
             return "RETURN {graph:[" + pathParas + "]} AS graph";
         }
@@ -1086,12 +1164,12 @@ public class AutoCypher {
      * @return
      * @Description: TODO(图模型只有节点)
      */
-    private String cypherAppendJustNodes(JSONArray nodes, long limit) {
+    private String cypherAppendJustNodes(JSONArray nodes, long skip, long limit) {
         StringBuilder cypherBuilder = new StringBuilder();
         long calLimit = calLimit(limit, nodes.size());
         for (Object obj : nodes) {
             JSONObject nObj = (JSONObject) obj;
-            String cypher = nodeCypher(nObj, calLimit);
+            String cypher = nodeCypher(nObj, skip, calLimit);
             cypherBuilder.append(cypher);
             cypherBuilder.append(" \n");
             cypherBuilder.append(CYPHER_JOINT);
@@ -1118,32 +1196,32 @@ public class AutoCypher {
      * @return
      * @Description: TODO(节点过滤CYPHER生成)
      */
-    private String nodeCypher(JSONObject nodeObject, long limit) {
+    private String nodeCypher(JSONObject nodeObject, long skip, long limit) {
         String label = nodeObject.getJSONArray("labels").getString(0);
         String properties_filter = FilterUtil.propertiesFilter("n", nodeObject.getJSONArray("properties_filter"));
         // custom.es.result.bool({es-url},{index-name},{query-dsl})
         String es_filter = FilterUtil.esFilter("n", nodeObject.getJSONArray("es_filter"));
         if ("".equals(es_filter) && !"".equals(properties_filter)) {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n LIMIT " + limit;
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
             } else {
                 return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n";
             }
         } else if (!"".equals(es_filter) && "".equals(properties_filter)) {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n LIMIT " + limit;
+                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
             } else {
                 return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n";
             }
         } else if (!"".equals(properties_filter)) {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n LIMIT " + limit;
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
             } else {
                 return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
             }
         } else {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") RETURN n LIMIT " + limit;
+                return "MATCH (n:" + label + ") RETURN n SKIP " + skip + " LIMIT " + limit;
             } else {
                 return "MATCH (n:" + label + ") RETURN n";
             }

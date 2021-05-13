@@ -439,9 +439,9 @@ public class AutoCypherTest {
                 "  }\n" +
                 "}";
 
-        String cypher = autoCypher.cypher(just_node_json, -1);
-        String cypher1 = autoCypher.cypher(just_node_json_just_es, -1);
-        String cypher2 = autoCypher.cypher(just_node_json_just_pro, -1);
+        String cypher = autoCypher.cypher(just_node_json, 0,-1);
+        String cypher1 = autoCypher.cypher(just_node_json_just_es, 0,-1);
+        String cypher2 = autoCypher.cypher(just_node_json_just_pro, 0,-1);
         System.out.println(cypher + "\n");
         System.out.println(cypher1 + "\n");
         System.out.println(cypher2 + "\n");
@@ -452,16 +452,18 @@ public class AutoCypherTest {
         AutoCypher autoCypher = new AutoCypher();
 //        String dir="auto-test-1";
 //        String dir="auto-test-2";
-        String dir = "auto-test-3";
+//        String dir = "auto-test-3";
+        String dir = "";
         // 入参JSON【暂不支持属性间布尔或条件】
-        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 3);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir  + File.separator + "node-pro.json", "UTF-8"), -1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), -1);
+        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "test.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 0,3);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir  + File.separator + "node-pro.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), 0,-1);
         System.out.println(cypher + "\n");
 
 //        System.out.println(
@@ -520,9 +522,10 @@ public class AutoCypherTest {
         Map<String, Object> hashMap = new HashMap<>();
         String dir = "auto-test-1";
         hashMap.put("JSON", FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"));
+        hashMap.put("SKIP", 0);
         hashMap.put("LIMIT", 100);
         // JSON_2包含环路，JSON_3包含环路，JSON_4不包含环路
-        Result result = db.execute("RETURN olab.schema.auto.cypher({JSON},{LIMIT}) AS CYPHER", hashMap);
+        Result result = db.execute("RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT}) AS CYPHER", hashMap);
         String cypher = (String) result.next().get("cypher");
         System.out.println(cypher);
     }
@@ -612,6 +615,14 @@ public class AutoCypherTest {
             Long cypher = (Long) result.next().get("atomicId");
             System.out.println(cypher);
         }
+    }
+
+    @Test
+    public void findPathSkeleton() {
+        AutoCypher autoCypher = new AutoCypher();
+        System.out.println(autoCypher.findPathSkeleton("MATCH p0=(n0:公司)-[r0to1:担保]->(n1:公司)-[r1to2:担保]->(n2:公司)-[r2to3:担保]->(n3:公司) WITH n0,n1,n2,n3,p0 "));
+        System.out.println(autoCypher.findPathSkeleton("MATCH p1=(n0:公司)-[r0to1:担保]->(n1:公司)-[r1to2:担保]->(n2:公司) WITH n0,n1,n2,n3,p0,p1 "));
+        System.out.println(autoCypher.findPathSkeleton("MATCH p2=(n0:公司)-[r0to1:担保]->(n1:公司) WITH n0,n1,n2,n3,p0,p1,p2 "));
     }
 }
 

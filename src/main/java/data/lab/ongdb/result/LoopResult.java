@@ -49,6 +49,8 @@ public class LoopResult {
 
     private List<String> paraSeqList = new ArrayList<>();
 
+    private String skeletonPathStr;
+
     public LoopResult(Long[] nodeSeqIds) {
         this.nodeSeqIdList = Arrays.asList(nodeSeqIds);
         StringBuilder builder = new StringBuilder();
@@ -272,6 +274,14 @@ public class LoopResult {
 
     public void setJointCypher(String jointCypher) {
         this.jointCypher = jointCypher;
+    }
+
+    public String getSkeletonPathStr() {
+        return skeletonPathStr;
+    }
+
+    public void setSkeletonPathStr(String skeletonPathStr) {
+        this.skeletonPathStr = skeletonPathStr;
     }
 
     @Override

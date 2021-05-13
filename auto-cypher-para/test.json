@@ -1,0 +1,50 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "labels": [
+          "公司"
+        ]
+      },
+      {
+        "id": "2",
+        "labels": [
+          "公司"
+        ]
+      },
+      {
+        "id": "3",
+        "labels": [
+          "公司"
+        ]
+      },
+      {
+        "id": "4",
+        "labels": [
+          "公司"
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "1",
+        "type": "担保",
+        "startNode": "1",
+        "endNode": "2"
+      },
+      {
+        "id": "2",
+        "type": "担保",
+        "startNode": "2",
+        "endNode": "3"
+      },
+      {
+        "id": "3",
+        "type": "担保",
+        "startNode": "3",
+        "endNode": "4"
+      }
+    ]
+  }
+}
