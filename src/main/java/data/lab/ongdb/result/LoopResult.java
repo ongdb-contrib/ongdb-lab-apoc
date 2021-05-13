@@ -242,9 +242,9 @@ public class LoopResult {
         this.nodeSeqIdList = nodeSeqIdList;
     }
 
-//    public String getPathStr() {
-//        return pathStr;
-//    }
+    public String getPathStr() {
+        return pathStr;
+    }
 
     public void setPathStr(String pathStr) {
         this.pathStr = pathStr;
