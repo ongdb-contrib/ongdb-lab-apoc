@@ -697,9 +697,10 @@ public class AutoCypher {
      *                             #############
      *                             ES过滤器(es_filter)：
      *                             ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
+     * @param skip:忽略参数
      * @param limit:限制参数【表示匹配多个子图】
      * @return
-     * @Description: TODO
+     * @Description: TODO(自动生成匹配子图的CYPHER-【支持属性过滤器和ES过滤器】【支持匹配环路子图CYPHER生成】)
      * <p>
      * 使用前先安装APOC用过程‘apoc.custom.asFunction’生成函数‘custom.es.result.bool’【简化ES访问语句】
      * ```
