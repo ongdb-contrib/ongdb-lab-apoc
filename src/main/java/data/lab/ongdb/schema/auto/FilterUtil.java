@@ -70,7 +70,7 @@ public class FilterUtil {
                 if (query == null || !query.contains("entity_unique_code:{var}")) {
                     throw new IllegalArgumentException("ES Filter error - Missing：{term:{entity_unique_code:{var}}}");
                 }
-                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query.replace("entity_unique_code:{var}", "entity_unique_code:'`+" + varName + ".entity_unique_code+`'"));
+                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query.replace("entity_unique_code:{var}", "entity_unique_code:" + varName + ".entity_unique_code"));
             }
         }
         return "";

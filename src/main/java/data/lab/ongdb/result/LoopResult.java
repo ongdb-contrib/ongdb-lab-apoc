@@ -179,7 +179,9 @@ public class LoopResult {
             builder.append(" WHERE ");
             if (filterInvalidStr(nodeFilter).length() > 1 && filterInvalidStr(relFilterStr).length() > 1) {
                 builder.append(nodeFilter);
-                builder.append(" AND ");
+                if (!nodeFilter.substring(nodeFilter.length() - 4, nodeFilter.length()).contains("AND")) {
+                    builder.append(" AND ");
+                }
                 builder.append(relFilterStr);
             } else if (filterInvalidStr(nodeFilter).length() > 1) {
                 builder.append(nodeFilter);
