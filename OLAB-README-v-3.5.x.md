@@ -574,7 +574,7 @@ CALL olab.schema.loop(graphData) YIELD loopResultList RETURN SIZE(loopResultList
 ```
 
 ## 自动生成子图匹配的CYPHER语句
->olab.schema.auto.cypher
+>olab.schema.auto.cypher({json},{skip},{limit},{isReTraverseNode})
 ```
 olab.schema.auto.cypher入参：
      * @param json:入参                            #############
