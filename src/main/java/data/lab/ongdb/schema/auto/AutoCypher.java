@@ -699,7 +699,7 @@ public class AutoCypher {
      *                                           ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
      * @param skip:忽略参数
      * @param limit:限制参数【表示匹配多个子图】
-     * @param isReTraverseNode:是否允许重复遍历节点【默认不允许】
+     * @param isReTraverseNode:是否允许重复遍历节点【默认不允许】【指graph中每条path中是否允许节点重复】【path之间是允许节点重复的，因为用户有可能这样定义查询图】
      * @return
      * @Description: TODO(自动生成匹配子图的CYPHER - 【 支持属性过滤器和ES过滤器 】 【 支持匹配环路子图CYPHER生成 】)
      * <p>
