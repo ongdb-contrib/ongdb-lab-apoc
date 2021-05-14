@@ -678,25 +678,25 @@ public class AutoCypher {
     }
 
     /**
-     * @param json:入参                            #############
-     *                                           属性过滤器属性之间过滤，连接方式只支持AND
-     *                                           #############
-     *                                           属性过滤器(properties_filter)：
-     *                                           包含【STRING】：‘ name CONTAINS '北京' '
-     *                                           等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
-     *                                           大于【INT、LONG】：‘ count>0 ’
-     *                                           小于【INT、LONG】：‘ count<0 ’
-     *                                           大于等于【INT、LONG】：‘ count>=0 ’
-     *                                           小于等于【INT、LONG】：‘ count>=0 ’
-     *                                           范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
-     *                                           范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
-     *                                           范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
-     *                                           范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
-     *                                           #############
-     *                                           ES-QUERY
-     *                                           #############
-     *                                           ES过滤器(es_filter)：
-     *                                           ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
+     * @param json:入参                                                                                   #############
+     *                                                                                                  属性过滤器属性之间过滤，连接方式只支持AND
+     *                                                                                                  #############
+     *                                                                                                  属性过滤器(properties_filter)：
+     *                                                                                                  包含【STRING】：‘ name CONTAINS '北京' '
+     *                                                                                                  等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
+     *                                                                                                  大于【INT、LONG】：‘ count>0 ’
+     *                                                                                                  小于【INT、LONG】：‘ count<0 ’
+     *                                                                                                  大于等于【INT、LONG】：‘ count>=0 ’
+     *                                                                                                  小于等于【INT、LONG】：‘ count>=0 ’
+     *                                                                                                  范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
+     *                                                                                                  范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
+     *                                                                                                  范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
+     *                                                                                                  范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
+     *                                                                                                  #############
+     *                                                                                                  ES-QUERY
+     *                                                                                                  #############
+     *                                                                                                  ES过滤器(es_filter)：
+     *                                                                                                  ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
      * @param skip:忽略参数
      * @param limit:限制参数【表示匹配多个子图】
      * @param isReTraverseNode:是否允许重复遍历节点【默认不允许】【指graph中每条path中是否允许节点重复】【path之间是允许节点重复的，因为用户有可能这样定义查询图】
@@ -1052,12 +1052,16 @@ public class AutoCypher {
                 if (Character.isSpaceChar(ch)) {
                     spaceCount++;
                 }
+                if (spaceCount > 2) {
+                    break;
+                }
                 if (spaceCount == 2) {
                     builderWhere.append(ch);
                     midSpace = i;
-                    if (chars[i + 1] != 'W') {
-                        break;
-                    }
+                    // 每条PATH都有WITH关键字
+//                    if (chars[i + 1] != 'W') {
+//                        break;
+//                    }
                 }
                 if (" WHERE".equals(builderWhere.toString())) {
                     midWhere = i;
