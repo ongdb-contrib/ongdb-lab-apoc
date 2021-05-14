@@ -575,6 +575,31 @@ CALL olab.schema.loop(graphData) YIELD loopResultList RETURN SIZE(loopResultList
 
 ## 自动生成子图匹配的CYPHER语句
 >olab.schema.auto.cypher
+```
+olab.schema.auto.cypher入参：
+     * @param json:入参                            #############
+     *                                           属性过滤器属性之间过滤，连接方式只支持AND
+     *                                           #############
+     *                                           属性过滤器(properties_filter)：
+     *                                           包含【STRING】：‘ name CONTAINS '北京' '
+     *                                           等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
+     *                                           大于【INT、LONG】：‘ count>0 ’
+     *                                           小于【INT、LONG】：‘ count<0 ’
+     *                                           大于等于【INT、LONG】：‘ count>=0 ’
+     *                                           小于等于【INT、LONG】：‘ count>=0 ’
+     *                                           范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
+     *                                           范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
+     *                                           范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
+     *                                           范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
+     *                                           #############
+     *                                           ES-QUERY
+     *                                           #############
+     *                                           ES过滤器(es_filter)：
+     *                                           ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
+     * @param skip:忽略参数
+     * @param limit:限制参数【表示匹配多个子图】
+     * @param isReTraverseNode:是否允许重复遍历节点【默认不允许】【指graph中每条path中是否允许节点重复】【path之间是允许节点重复的，因为用户有可能这样定义查询图】
+```
 >- 【不支持属性过滤器】支持从CYPHER生成CYPHER，此方式只支持生成匹配图模式的CYPHER；
 >- 【支持属性过滤器】支持从json生成CYPHER，此方式支持生成匹配图模式的CYPHER、属性过滤的CYPHER、ES指标过滤的CYPHER
 - 安装函数
