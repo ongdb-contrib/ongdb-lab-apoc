@@ -35,9 +35,9 @@ public class CreateTest {
         GraphDatabaseService db = neo4jProc.getGraphDatabaseService();
         Map<String, Object> props = new HashMap<>();
         props.put("hcode", "HINDUS");
-        props.put("name", "�Ṥ");
+        props.put("name", "轻工");
         Map<String, Object> map = new HashMap<>();
-        map.put("labels", Collections.singletonList("��ҵ"));
+        map.put("labels", Collections.singletonList("行业"));
         map.put("props", props);
         map.put("identity", -109);
         Result res = db.execute("CALL olab.create.vNode({labels},{props},{identity}) YIELD node RETURN node", map);
@@ -49,9 +49,9 @@ public class CreateTest {
         GraphDatabaseService db = neo4jFunction.getGraphDatabaseService();
         Map<String, Object> props = new HashMap<>();
         props.put("hcode", "HINDUS");
-        props.put("name", "�Ṥ");
+        props.put("name", "轻工");
         Map<String, Object> map = new HashMap<>();
-        map.put("labels", Collections.singletonList("��ҵ"));
+        map.put("labels", Collections.singletonList("行业"));
         map.put("props", props);
         map.put("identity", -109);
         Result res = db.execute("RETURN olab.create.vNode({labels},{identity},{props}) AS node", map);

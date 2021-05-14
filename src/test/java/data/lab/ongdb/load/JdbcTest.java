@@ -30,10 +30,10 @@ public class JdbcTest {
     @Test
     public void jdbc() {
         /*
-        * ²éÑ¯Í¬Ê±Ö§³Ö¸üĞÂ£º
+        * æŸ¥è¯¢åŒæ—¶æ”¯æŒæ›´æ–°ï¼š
         * CALL olab.load.jdbc('jdbc:mysql://datalab-contentdb-dev.crkldnwly6ki.rds.cn-north-1.amazonaws.com.cn:3306/analytics_graph_data?user=dev&password=datalabgogo&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC','SELECT autoNodeId(?) AS autoNodeId;',['HORG20f2833a17034a812349e1933d9c5e5f1111'])
         *
-        * ¸Ã´æ´¢¹ı³ÌÖ§³Ö²éÑ¯¸üĞÂ£ºSELECT autoNodeId(?) AS autoNodeId;
+        * è¯¥å­˜å‚¨è¿‡ç¨‹æ”¯æŒæŸ¥è¯¢æ›´æ–°ï¼šSELECT autoNodeId(?) AS autoNodeId;
         *
         * */
         GraphDatabaseService db = neo4jProc.getGraphDatabaseService();

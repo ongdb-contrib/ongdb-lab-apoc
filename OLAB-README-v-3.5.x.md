@@ -595,7 +595,7 @@ CALL apoc.custom.asFunction(
 - 使用JSON串生成子图匹配的CYPHER
 ```
 WITH '{"graph": {"nodes": [{"id": "256","labels": ["行业"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "250","labels": ["公司"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "251","labels": ["公司"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "252","labels": ["公司"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "253","labels": ["位置"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "254","labels": ["产品"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "255","labels": ["行业"],"properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]}],"relationships": [{"id": "314","type": "持股","startNode": "250","endNode": "251","properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "315","type": "担保","startNode": "250","endNode": "252","properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "316","type": "属于","startNode": "250","endNode": "253","properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "317","type": "生产","startNode": "250","endNode": "254","properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "318","type": "属于","startNode": "250","endNode": "255","properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]},{"id": "319","type": "上下游","startNode": "255","endNode": "256","properties_filter": [{"hcreatetime": "{var}.hcreatetime=\'20201116032333\'"},{"count": "{var}.count>=0 AND {var}.count<=10"}],"es_filter": [{"es_url": "10.20.13.130:9200","index_name": "dl_default_indicator_def","query": "{size:1,query:{term:{entity_unique_code:{var}}}}"}]}]}}' AS json
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 ```
 - 使用CYPHER查询到的子图生成子图匹配的CYPHER
 ```
@@ -604,21 +604,21 @@ MATCH p1=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-
 MATCH p2=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to3:属于]->(n3:位置) WITH n6,n5,n0,n1,p0,n2,p1,n3,p2 
 MATCH p3=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to4:生产]->(n4:产品) WITH n6,n5,n0,n1,p0,n2,p1,n3,p2,n4,p3 
 WITH olab.convert.json([p0,p1,p2,p3]) AS json LIMIT 1
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // RESULT：
 // MATCH p0=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to1:持股]->(n1:公司) WITH n6,n5,n0,n1,p0 MATCH p1=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to2:担保]->(n2:公司) WITH n6,n5,n0,n1,p0,n2,p1 MATCH p2=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to3:属于]->(n3:位置) WITH n6,n5,n0,n1,p0,n2,p1,n3,p2 MATCH p3=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to4:生产]->(n4:产品) WITH n6,n5,n0,n1,p0,n2,p1,n3,p2,n4,p3 RETURN {graph:[p0,p1,p2,p3]} AS graph LIMIT 100
 ```
 ```
 MATCH p0=(n6:行业)<-[r5to6:上下游]-(n5:行业) WITH p0 
 WITH olab.convert.json(p0) AS json LIMIT 1
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // RESULT：
 // MATCH p0=(n1:行业)<-[r0to1:上下游]-(n0:行业) WITH n1,n0,p0 RETURN {graph:[p0]} AS graph LIMIT 100
 ```
 ```
 MATCH p0=(n6:行业)<-[r5to6:上下游]-(n5:行业) WITH p0 
 WITH olab.convert.json(p0) AS json LIMIT 1
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // RESULT：
 // MATCH p0=(n1:行业)<-[r0to1:上下游]-(n0:行业) WITH n1,n0,p0 RETURN {graph:[p0]} AS graph LIMIT 100
 ```
@@ -627,7 +627,7 @@ RETURN olab.schema.auto.cypher(json,0,100) AS cypher
 MATCH p0=(n6:行业)<-[r5to6:上下游]-(n5:行业) WITH p0 
 MATCH p1=(:Movie)-[]-(:Person) WITH p0,p1
 WITH olab.convert.json([p0,p1]) AS json LIMIT 1
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // RESULT：
 // Caused by: java.lang.IllegalArgumentException: The graph is not a weakly connected graph!
 ```
@@ -635,7 +635,7 @@ RETURN olab.schema.auto.cypher(json,0,100) AS cypher
 // 测试环路子图
 MATCH p0=(n:Movie)<-[:WROTE]-(p:Person)-[:ACTED_IN]->(n:Movie) WITH p0 
 WITH olab.convert.json([p0]) AS json LIMIT 1
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // RESULT：
 // MATCH p0=(n0:Movie)<-[r1to0:WROTE]-(n1:Person) WITH n0,n1,p0 
 // MATCH p1=(n0:Movie)<-[r1to0:ACTED_IN]-(n1:Person) WITH n0,n1,p0,p1 
@@ -656,7 +656,7 @@ CREATE p6=(n3)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6
 CREATE p7=(n2)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7
 CREATE p8=(n1)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7,p8
 WITH olab.convert.json([p1,p2,p3,p4,p5,p6,p7,p8]) AS json
-RETURN olab.schema.auto.cypher(json,0,100) AS cypher
+RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // RESULT：
 // MATCH p0=(n0:公司)-[r0to3:属于]->(n3:行业)<-[r2to3:属于]-(n2:公司)<-[r1to2:担保]-(n1:公司) WITH n0,n3,n2,n1,p0 
 // MATCH p1=(n0:公司)-[r0to3:属于]->(n3:行业)<-[r2to3:属于]-(n2:公司)<-[r1to2:持股]-(n1:公司) WITH n0,n3,n2,n1,p0,p1 

@@ -678,29 +678,30 @@ public class AutoCypher {
     }
 
     /**
-     * @param json:入参              #############
-     *                             属性过滤器属性之间过滤，连接方式只支持AND
-     *                             #############
-     *                             属性过滤器(properties_filter)：
-     *                             包含【STRING】：‘ name CONTAINS '北京' '
-     *                             等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
-     *                             大于【INT、LONG】：‘ count>0 ’
-     *                             小于【INT、LONG】：‘ count<0 ’
-     *                             大于等于【INT、LONG】：‘ count>=0 ’
-     *                             小于等于【INT、LONG】：‘ count>=0 ’
-     *                             范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
-     *                             范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
-     *                             范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
-     *                             范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
-     *                             #############
-     *                             ES-QUERY
-     *                             #############
-     *                             ES过滤器(es_filter)：
-     *                             ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
+     * @param json:入参                            #############
+     *                                           属性过滤器属性之间过滤，连接方式只支持AND
+     *                                           #############
+     *                                           属性过滤器(properties_filter)：
+     *                                           包含【STRING】：‘ name CONTAINS '北京' '
+     *                                           等于【STRING、INT、LONG】：‘ name='北京' ’  ‘ count=0 ’
+     *                                           大于【INT、LONG】：‘ count>0 ’
+     *                                           小于【INT、LONG】：‘ count<0 ’
+     *                                           大于等于【INT、LONG】：‘ count>=0 ’
+     *                                           小于等于【INT、LONG】：‘ count>=0 ’
+     *                                           范围-左闭右闭【INT、LONG】：‘ count>=0 AND count<=10 ’
+     *                                           范围-左闭右开【INT、LONG】：‘ count>=0 AND count<10 ’
+     *                                           范围-左开右闭【INT、LONG】：‘ count>0 AND count<=10 ’
+     *                                           范围-左开右开【INT、LONG】：‘ count>0 AND count<10 ’
+     *                                           #############
+     *                                           ES-QUERY
+     *                                           #############
+     *                                           ES过滤器(es_filter)：
+     *                                           ES-QUERY-DSL【去掉JSON引号的查询语句】eg.{size:1,query:{term:{product_code:"PF0020020104"}}}
      * @param skip:忽略参数
      * @param limit:限制参数【表示匹配多个子图】
+     * @param isReTraverseNode:是否允许重复遍历节点【默认不允许】
      * @return
-     * @Description: TODO(自动生成匹配子图的CYPHER-【支持属性过滤器和ES过滤器】【支持匹配环路子图CYPHER生成】)
+     * @Description: TODO(自动生成匹配子图的CYPHER - 【 支持属性过滤器和ES过滤器 】 【 支持匹配环路子图CYPHER生成 】)
      * <p>
      * 使用前先安装APOC用过程‘apoc.custom.asFunction’生成函数‘custom.es.result.bool’【简化ES访问语句】
      * ```
@@ -723,7 +724,7 @@ public class AutoCypher {
      */
     @UserFunction(name = "olab.schema.auto.cypher")
     @Description("```\n" +
-            "RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT}) AS cypher\n" +
+            "RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT},{isReTraverseNode}) AS cypher\n" +
             "```\n" +
             "```\n" +
             "输入：\n" +
@@ -732,7 +733,7 @@ public class AutoCypher {
             "    过滤器设计：传入查询碎片直接拼接查询碎片\n" +
             "输出：拼接好的CYPHER语句\n" +
             "```")
-    public String cypher(@Name("json") String json, @Name(value = "limit", defaultValue = "0") long skip, @Name(value = "limit", defaultValue = "100") long limit) {
+    public String cypher(@Name("json") String json, @Name(value = "limit", defaultValue = "0") long skip, @Name(value = "limit", defaultValue = "100") long limit, @Name(value = "limit", defaultValue = "false") boolean isReTraverseNode) {
         skip = skip < 0 ? 0 : skip;
         limit = limit < 1 ? 1 : limit;
         /*
@@ -775,7 +776,7 @@ public class AutoCypher {
             if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
             }
-            return cypherAppendNotJustNodes(graphData, skip, limit);
+            return cypherAppendNotJustNodes(graphData, skip, limit, isReTraverseNode);
         }
     }
 
@@ -784,7 +785,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO(图对象转换为CYPHER语句)
      */
-    private String cypherAppendNotJustNodes(JSONObject graphData, long skip, long limit) {
+    private String cypherAppendNotJustNodes(JSONObject graphData, long skip, long limit, boolean isReTraverseNode) {
         /*
          * 1、确定顶点【一度连边顶点】
          * 2、检测graphData是一个连通图【求弱连通分量】
@@ -847,7 +848,7 @@ public class AutoCypher {
         /*
          * 根据查询代码自动优化拼接多条path
          * */
-        return generateCypher(graphNodeIdSeqPaths, skip, limit);
+        return generateCypher(graphNodeIdSeqPaths, skip, limit, isReTraverseNode);
     }
 
     /**
@@ -951,7 +952,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO({ var.p } - 生成子图模式匹配语句)
      */
-    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long skip, long limit) {
+    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long skip, long limit, boolean isReTraverseNode) {
         /*
          * 长路径优先
          * 过滤属性数量优先
@@ -968,7 +969,12 @@ public class AutoCypher {
         /*
          * 路径编码之前优化路径【发现父级路径的子路径，自动剔除】
          * */
-        List<LoopResult> graphNodeIdSeqPathsSort = autoRemove(rawGraphNodeIdSeqPathsSort);
+        List<LoopResult> raw2GraphNodeIdSeqPathsSort = autoRemove(rawGraphNodeIdSeqPathsSort);
+
+        /*
+         * 增加重复遍历参数【是否允许重复遍历节点】
+         * */
+        List<LoopResult> graphNodeIdSeqPathsSort = addIsReTraverseNode(raw2GraphNodeIdSeqPathsSort, isReTraverseNode);
 
         /*
          * 对路径进行编码：替换`{var.p}`变量标记
@@ -1002,6 +1008,96 @@ public class AutoCypher {
         /*
          * 拼接序列中的CYPHER
          * */
+        return builder.toString();
+    }
+
+    /**
+     * @param isReTraverseNode:false表示不允许
+     * @return
+     * @Description: TODO(增加重复遍历参数 【 是否允许重复遍历节点 】)
+     */
+    private List<LoopResult> addIsReTraverseNode(List<LoopResult> raw2GraphNodeIdSeqPathsSort, boolean isReTraverseNode) {
+        List<LoopResult> newLoopList = new ArrayList<>();
+        int size = raw2GraphNodeIdSeqPathsSort.size();
+        for (int i = 0; i < size; i++) {
+            LoopResult result = raw2GraphNodeIdSeqPathsSort.get(i);
+            if (i == 0) {
+                String jointCypher = appendIsNotTraverseNodeCond(result, isReTraverseNode);
+                result.setJointCypher(jointCypher);
+            }
+            newLoopList.add(result);
+        }
+        return newLoopList;
+    }
+
+    /**
+     * @param isReTraverseNode:false表示不允许重复遍历节
+     * @return
+     * @Description: TODO(增加不重复遍历节点的参数)
+     */
+    private String appendIsNotTraverseNodeCond(LoopResult result, boolean isReTraverseNode) {
+        if (!isReTraverseNode) {
+            String condition = isReTraverseNodeCondition(result);
+            StringBuilder builderWhere = new StringBuilder();
+            StringBuilder jointCypher = new StringBuilder();
+            String rawJointCypher = result.getJointCypher();
+            int start = 0;
+            int midSpace = 0;
+            int midWhere = 0;
+            int end = rawJointCypher.length();
+            int spaceCount = 0;
+            char[] chars = rawJointCypher.toCharArray();
+            for (int i = 0; i < chars.length; i++) {
+                char ch = chars[i];
+                if (Character.isSpaceChar(ch)) {
+                    spaceCount++;
+                }
+                if (spaceCount == 2) {
+                    builderWhere.append(ch);
+                    midSpace = i;
+                    if (chars[i + 1] != 'W') {
+                        break;
+                    }
+                }
+                if (" WHERE".equals(builderWhere.toString())) {
+                    midWhere = i;
+                    break;
+                }
+            }
+            if (midWhere == 0 && midSpace > 0) {
+                jointCypher.append(rawJointCypher, start, midSpace + 1)
+                        .append("WHERE").append(" ").append(condition).append(" ")
+                        .append(rawJointCypher, midSpace + 1, end);
+            } else {
+                // CYPHER存在WHERE条件
+                jointCypher.append(rawJointCypher, start, midWhere + 1)
+                        .append(" ").append(condition).append(" AND ")
+                        .append(rawJointCypher, midWhere + 2, end);
+            }
+            return jointCypher.toString();
+        }
+        return result.getJointCypher();
+    }
+
+    /**
+     * @return
+     * @Description: TODO(增加不重复遍历节点的参数)
+     */
+    private String isReTraverseNodeCondition(LoopResult result) {
+        List<String> paraSeqList = result.getParaSeqList();
+        StringBuilder builder = new StringBuilder();
+        int size = paraSeqList.size();
+        for (int i = 0; i < size; i++) {
+            for (int j = i + 1; j < size; j++) {
+                builder.append(paraSeqList.get(i)).append("<>").append(paraSeqList.get(j));
+                if (j < size - 1) {
+                    builder.append(" AND ");
+                }
+            }
+            if (i < size - 2) {
+                builder.append(" AND ");
+            }
+        }
         return builder.toString();
     }
 

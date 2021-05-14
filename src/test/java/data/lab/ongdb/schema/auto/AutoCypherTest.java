@@ -439,9 +439,9 @@ public class AutoCypherTest {
                 "  }\n" +
                 "}";
 
-        String cypher = autoCypher.cypher(just_node_json, 0,-1);
-        String cypher1 = autoCypher.cypher(just_node_json_just_es, 0,-1);
-        String cypher2 = autoCypher.cypher(just_node_json_just_pro, 0,-1);
+        String cypher = autoCypher.cypher(just_node_json, 0,-1,true);
+        String cypher1 = autoCypher.cypher(just_node_json_just_es, 0,-1,true);
+        String cypher2 = autoCypher.cypher(just_node_json_just_pro, 0,-1,true);
         System.out.println(cypher + "\n");
         System.out.println(cypher1 + "\n");
         System.out.println(cypher2 + "\n");
@@ -452,18 +452,18 @@ public class AutoCypherTest {
         AutoCypher autoCypher = new AutoCypher();
 //        String dir="auto-test-1";
 //        String dir="auto-test-2";
-//        String dir = "auto-test-3";
-        String dir = "";
+        String dir = "auto-test-3";
+//        String dir = "";
         // 入参JSON【暂不支持属性间布尔或条件】
-        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "test.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 0,3);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir  + File.separator + "node-pro.json", "UTF-8"), 0,-1);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), 0,-1);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "test.json", "UTF-8"), 0,-1,false);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), 0,-1,true);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 0,3,true);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), 0,-1,true);
+        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), 0,-1,false);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), 0,-1,true);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), 0,-1,true);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir  + File.separator + "node-pro.json", "UTF-8"), 0,-1,true);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), 0,-1,true);
         System.out.println(cypher + "\n");
 
 //        System.out.println(
