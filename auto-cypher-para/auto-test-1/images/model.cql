@@ -27,7 +27,7 @@ CREATE p4=(org1)-[:生产]->(pro) WITH org1,idu1,idu2,p1,p2,p3,p4
 CREATE p5=(org1)-[:属于]->(idu1) WITH org1,idu1,idu2,p1,p2,p3,p4,p5
 CREATE p6=(idu1)-[:上下游]->(idu2) WITH p1,p2,p3,p4,p5,p6
 WITH olab.convert.json([p1,p2,p3,p4,p5,p6]) AS json
-RETURN olab.schema.auto.cypher(json,100) AS cypher
+RETURN olab.schema.auto.cypher(json,-1,10,false) AS cypher
 
 CREATE (org1:公司) SET org1.name='公司' WITH org1
 CREATE (org2:公司) SET org2.name='公司' WITH org1,org2
@@ -43,6 +43,6 @@ CREATE p4=(org1)-[:生产]->(pro) WITH org1,idu1,idu2,p1,p2,p3,p4
 CREATE p5=(org1)-[:属于]->(idu1) WITH org1,idu1,idu2,p1,p2,p3,p4,p5
 CREATE p6=(idu1)-[:上下游]->(idu2) WITH p1,p2,p3,p4,p5,p6
 WITH olab.convert.json([p1,p2,p3,p4,p5,p6]) AS json
-WITH olab.schema.auto.cypher(json,100) AS cypher
+WITH olab.schema.auto.cypher(json,-1,10,false) AS cypher
 CALL apoc.cypher.run(cypher,{}) YIELD value RETURN value.graph AS graph
 

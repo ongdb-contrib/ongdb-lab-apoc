@@ -25,7 +25,7 @@ CREATE p6=(n3)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6
 CREATE p7=(n2)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7
 CREATE p8=(n1)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7,p8
 WITH olab.convert.json([p1,p2,p3,p4,p5,p6,p7,p8]) AS json
-RETURN olab.schema.auto.cypher(json,100) AS cypher
+RETURN olab.schema.auto.cypher(json,-1,10,false) AS cypher
 
 CREATE (n1:公司) SET n1.name='公司' WITH n1
 CREATE (n2:公司) SET n2.name='公司' WITH n1,n2
@@ -40,6 +40,6 @@ CREATE p6=(n3)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6
 CREATE p7=(n2)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7
 CREATE p8=(n1)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7,p8
 WITH olab.convert.json([p1,p2,p3,p4,p5,p6,p7,p8]) AS json
-WITH olab.schema.auto.cypher(json,100) AS cypher
+WITH olab.schema.auto.cypher(json,-1,10,false) AS cypher
 CALL apoc.cypher.run(cypher,{}) YIELD value RETURN value.graph AS graph
 

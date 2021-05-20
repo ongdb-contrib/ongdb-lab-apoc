@@ -1066,6 +1066,9 @@ public class AutoCypher {
                 if (" WHERE".equals(builderWhere.toString())) {
                     midWhere = i;
                     break;
+                } else if (" RETURN".equals(builderWhere.toString())) {
+                    midSpace = i - (" RETURN".length() - 1);
+                    break;
                 }
             }
             if (midWhere == 0 && midSpace > 0) {
@@ -1466,7 +1469,7 @@ public class AutoCypher {
      */
     @Procedure(name = "olab.schema.loop.vpath", mode = Mode.READ)
     @Description("CALL olab.schema.loop.vpath({relationship},{atomicId}]) YIELD from,rel,to RETURN from,rel,to")
-    public Stream<VirtualPathResult> isLoopGraph(@Name("relationship") Relationship relationship, @Name("atomicId") Long atomicId) {
+    public Stream<VirtualPathResult> vpath(@Name("relationship") Relationship relationship, @Name("atomicId") Long atomicId) {
         RelationshipType type = relationship.getType();
 
         Node fromNode = relationship.getStartNode();

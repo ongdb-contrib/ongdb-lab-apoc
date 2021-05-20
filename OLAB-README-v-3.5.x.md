@@ -513,6 +513,13 @@ CALL olab.schema.all.path(graphData) YIELD loopResultList RETURN loopResultList 
 ```
 
 ## 传入关系对象生成虚拟图
+>ID等于0的数据需要被清空【ID为0的数据不支持生成虚拟图】
+### 返回`VirtualPathResult`对象
+```
+MATCH ()-[r]-() WITH r LIMIT 1
+CALL olab.schema.loop.vpath(r,-1) YIELD from,rel,to RETURN (from)-[rel]->(to) AS path
+```
+### 返回`List<VirtualPathResult>`对象
 ```
 MATCH ()-[r]-() WITH r LIMIT 1
 CALL olab.schema.loop.vpath(r,-1) YIELD from,rel,to RETURN (from)-[rel]->(to) AS path
@@ -701,5 +708,29 @@ RETURN olab.schema.auto.cypher(json,0,100,true) AS cypher
 // {groupField}:列表中对象的分组字段
 RETURN olab.cartesian({mapList},{groupField}) AS cartesianList
 RETURN olab.cartesian([{id:1,name:'a',type:1},{id:2,name:'b',type:1},{id:3,name:'c',type:1},{id:4,name:'d',type:2},{id:5,name:'e',type:3},{id:6,name:'f',type:3}],'type') AS cartesianList
+```
+
+## 提取图结构并以图搜图将结果转换为虚拟图
+>创建一个多环路子图并抽取其图结构匹配其它相似子图之后生成虚拟图
+```
+CREATE (n1:公司) SET n1.name='公司' WITH n1
+CREATE (n2:公司) SET n2.name='公司' WITH n1,n2
+CREATE (n3:公司) SET n3.name='公司' WITH n1,n2,n3
+CREATE (n4:行业) SET n4.name='行业' WITH n1,n2,n3,n4
+CREATE p1=(n1)-[:持股]->(n2) WITH n1,n2,n3,n4,p1
+CREATE p2=(n1)-[:担保]->(n2) WITH n1,n2,n3,n4,p1,p2
+CREATE p3=(n1)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3
+CREATE p4=(n1)-[:持股]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4
+CREATE p5=(n2)-[:持股]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5
+CREATE p6=(n3)-[:属于]->(n4) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6
+CREATE p7=(n2)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7
+CREATE p8=(n1)-[:担保]->(n3) WITH n1,n2,n3,n4,p1,p2,p3,p4,p5,p6,p7,p8
+WITH olab.convert.json([p1,p2,p3,p4,p5,p6,p7,p8]) AS json
+WITH olab.schema.auto.cypher(json,-1,10) AS cypher
+CALL apoc.cypher.run(cypher,{}) YIELD value WITH value.graph.graph AS paths
+UNWIND paths AS path
+WITH RELATIONSHIPS(path) AS rels
+UNWIND rels AS r
+CALL olab.schema.loop.vpath(r,-1) YIELD from,rel,to RETURN (from)-[rel]->(to) AS path
 ```
 
