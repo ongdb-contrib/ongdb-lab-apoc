@@ -1286,7 +1286,7 @@ public class AutoCypher {
      */
     private long calLimit(long limit, int size) {
         if (limit < size) {
-            return -1;
+            return 1;
         } else {
             return (long) Math.ceil(limit / size);
         }
