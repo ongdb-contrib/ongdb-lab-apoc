@@ -28,6 +28,12 @@ public class LoopResult {
     private final static String TYPE = "type";
 
     /**
+     * isOutputFilter:是否返回过滤器与变量的绑定
+     */
+    private static final String varFilterMap = "WITH {} AS vFMap";
+    private static final String varFilterMapPara = "vFMap";
+
+    /**
      * 环路的节点序列
      */
     private List<Long> nodeSeqIdList;
@@ -50,6 +56,9 @@ public class LoopResult {
     private List<String> paraSeqList = new ArrayList<>();
 
     private String skeletonPathStr;
+
+    public LoopResult() {
+    }
 
     public LoopResult(Long[] nodeSeqIds) {
         this.nodeSeqIdList = Arrays.asList(nodeSeqIds);
@@ -101,21 +110,104 @@ public class LoopResult {
     /**
      * @param pathStr:路径串
      * @param indexNode:索引和节点ID对应关系
-     * @param directionListMap:方向对应关系    包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
+     * @param directionListMap:方向对应关系                                   包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
      * @param idToLabel:索引节点ID对应的节点标签MAP
      * @param nodeIndex:节点ID和索引ID对应关系
      * @param filterNodeMap:属性过滤器
+     * @param isOutputFilter:是否返回过滤器与变量的绑定，默认false【在WITH中返回变量ID与过滤器的绑定】
      * @return
      * @Description: TODO
      */
-    public LoopResult(String pathStr, HashMap<Long, Long> indexNode, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+    public LoopResult(String pathStr, HashMap<Long, Long> indexNode, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap, boolean isOutputFilter) {
         this.nodeSeqIdList = Arrays.asList(pathStr.split(PATH_REL_JOINT))
                 .parallelStream()
                 .map(v -> indexNode.get(Long.parseLong(v)))
                 .collect(Collectors.toList());
         this.pathStr = pathStr;
-        this.jointCypher = appendPathStr(nodeSeqIdList, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+        this.jointCypher = appendPathStr(nodeSeqIdList, directionListMap, idToLabel, nodeIndex, filterNodeMap, isOutputFilter);
     }
+
+//    /**
+//     * @param nodeSeqIdList:路径节点序列
+//     * @param directionListMap:关系数据【包含开始结束节点和关系类型的MAP】
+//     * @param idToLabel:索引节点ID对应的节点标签MAP
+//     * @param nodeIndex:节点ID和索引ID对应关系
+//     * @param filterNodeMap:属性过滤器
+//     * @return
+//     * @Description: TODO(拼接一个路径匹配模式语句)
+//     */
+//    private String appendPathStr(List<Long> nodeSeqIdList, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+//        StringBuilder builder = new StringBuilder();
+//        StringBuilder nodeFilter = new StringBuilder();
+//        StringBuilder relFilter = new StringBuilder();
+//        int size = nodeSeqIdList.size();
+//        builder.append("MATCH {var.p}=");
+//        for (int i = 0; i < size; i++) {
+//            long id = nodeSeqIdList.get(i);
+//            long idIdx = nodeIndex.get(id);
+//
+//            // 拼接节点变量
+//            String nodePara = "(n" + idIdx + ":" + idToLabel.get(id) + ")";
+//            builder.append(nodePara);
+//            this.paraSeqList.add(nodePara.replace("(", "").replace(")", "").split(":")[0]);
+//
+//            JSONObject nodeFilterObject = filterNodeMap.get(idIdx);
+//            String nodePropertiesFilter = FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject);
+//            nodeFilter.append(nodePropertiesFilter);
+//            this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
+//            if (i < size - 1) {
+//                // 拼接AND时增加一个判断逻辑
+//                if (nodePropertiesFilter.length() > 1) {
+//                    nodeFilter.append(" AND ");
+//                }
+//                long nextId = nodeSeqIdList.get(i + 1);
+//                long nextIdIdx = nodeIndex.get(nextId);
+//                Map<String, Object> map = relationshipType(id, nextId, directionListMap);
+//                String relationshipType = String.valueOf(map.get(TYPE));
+//                long startNode = Long.parseLong(String.valueOf(map.get(START_NODE)));
+//                long endNode = Long.parseLong(String.valueOf(map.get(END_NODE)));
+//                String relPropertiesFilter;
+//                if (startNode == id && endNode == nextId) {
+//                    String relPara = "r" + idIdx + "to" + nextIdIdx;
+//                    relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
+//                    relFilter.append(relPropertiesFilter);
+//                    this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
+//                    builder.append("-[").append(relPara).append(":").append(relationshipType).append("]->");
+//                } else {
+//                    String relPara = "r" + nextIdIdx + "to" + idIdx;
+//                    relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
+//                    relFilter.append(relPropertiesFilter);
+//                    this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
+//                    builder.append("<-[").append(relPara).append(":").append(relationshipType).append("]-");
+//                }
+//                // 拼接AND时增加一个判断逻辑
+//                if (relPropertiesFilter.length() > 1) {
+//                    relFilter.append(" AND ");
+//                }
+//            }
+//        }
+//        if (appendWhereCondition(nodeFilter, relFilter)) {
+//            String relFilterStr = relFilter.length() > 5 ? relFilter.substring(0, relFilter.length() - 5) : "";
+//            builder.append(" WHERE ");
+//            if (filterInvalidStr(nodeFilter).length() > 1 && filterInvalidStr(relFilterStr).length() > 1) {
+//                builder.append(nodeFilter);
+//                if (!nodeFilter.substring(nodeFilter.length() - 4, nodeFilter.length()).contains("AND")) {
+//                    builder.append(" AND ");
+//                }
+//                builder.append(relFilterStr);
+//            } else if (filterInvalidStr(nodeFilter).length() > 1) {
+//                builder.append(nodeFilter);
+//            } else if (filterInvalidStr(relFilterStr).length() > 1) {
+//                builder.append(relFilter);
+//            }
+//        }
+//        String cutCypher = builder.substring(builder.length() - 4, builder.length());
+//        if (cutCypher.contains("AND")) {
+//            return builder.substring(0, builder.length() - 4) + " RETURN {var.p} ";
+//        } else {
+//            return builder.append(" RETURN {var.p} ").toString();
+//        }
+//    }
 
     /**
      * @param nodeSeqIdList:路径节点序列
@@ -124,25 +216,32 @@ public class LoopResult {
      * @param nodeIndex:节点ID和索引ID对应关系
      * @param filterNodeMap:属性过滤器
      * @return
+     * @para isOutputFilter:是否返回过滤器与变量的绑定，默认false【在WITH中返回变量ID与过滤器的绑定】
      * @Description: TODO(拼接一个路径匹配模式语句)
      */
-    private String appendPathStr(List<Long> nodeSeqIdList, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+    private String appendPathStr(List<Long> nodeSeqIdList, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap, boolean isOutputFilter) {
         StringBuilder builder = new StringBuilder();
         StringBuilder nodeFilter = new StringBuilder();
         StringBuilder relFilter = new StringBuilder();
         int size = nodeSeqIdList.size();
         builder.append("MATCH {var.p}=");
+        // listList.add(new ArrayList<>(Arrays.asList("n0", "value")))
+        List<List<String>> listList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             long id = nodeSeqIdList.get(i);
             long idIdx = nodeIndex.get(id);
 
-            // 拼接节点变量
+            // 拼接变量：拼接节点变量
             String nodePara = "(n" + idIdx + ":" + idToLabel.get(id) + ")";
             builder.append(nodePara);
             this.paraSeqList.add(nodePara.replace("(", "").replace(")", "").split(":")[0]);
 
             JSONObject nodeFilterObject = filterNodeMap.get(idIdx);
             String nodePropertiesFilter = FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject);
+            // 是否增加到ID和过滤条件绑定列表
+            if (isOutputFilter) {
+                listList.add(new ArrayList<>(Arrays.asList("n" + idIdx, nodePropertiesFilter)));
+            }
             nodeFilter.append(nodePropertiesFilter);
             this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
             if (i < size - 1) {
@@ -158,14 +257,24 @@ public class LoopResult {
                 long endNode = Long.parseLong(String.valueOf(map.get(END_NODE)));
                 String relPropertiesFilter;
                 if (startNode == id && endNode == nextId) {
+                    // 拼接变量：拼接关系变量
                     String relPara = "r" + idIdx + "to" + nextIdIdx;
                     relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
+                    // 是否增加到ID和过滤条件绑定列表
+                    if (isOutputFilter) {
+                        listList.add(new ArrayList<>(Arrays.asList(relPara, relPropertiesFilter)));
+                    }
                     relFilter.append(relPropertiesFilter);
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
                     builder.append("-[").append(relPara).append(":").append(relationshipType).append("]->");
                 } else {
+                    // 拼接变量：拼接关系变量
                     String relPara = "r" + nextIdIdx + "to" + idIdx;
                     relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
+                    // 是否增加到ID和过滤条件绑定列表
+                    if (isOutputFilter) {
+                        listList.add(new ArrayList<>(Arrays.asList(relPara, relPropertiesFilter)));
+                    }
                     relFilter.append(relPropertiesFilter);
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
                     builder.append("<-[").append(relPara).append(":").append(relationshipType).append("]-");
@@ -192,11 +301,75 @@ public class LoopResult {
             }
         }
         String cutCypher = builder.substring(builder.length() - 4, builder.length());
+        // List<List<String>> listList = new ArrayList<>();
+        List<List<String>> reListList = listList.stream().filter(v -> !"".equals(v.get(1))).collect(Collectors.toList());
         if (cutCypher.contains("AND")) {
-            return builder.substring(0, builder.length() - 4) + " RETURN {var.p} ";
+            if (isOutputFilter) {
+                if (!reListList.isEmpty()) {
+                    return builder.substring(0, builder.length() - 4) + " RETURN {var.p}," + mapSetPairs(mapSetPairsListList(reListList)) + " ";
+                } else {
+                    return builder.substring(0, builder.length() - 4) + " RETURN {var.p}," + varFilterMapPara + " ";
+                }
+            } else {
+                return builder.substring(0, builder.length() - 4) + " RETURN {var.p} ";
+            }
         } else {
-            return builder.append(" RETURN {var.p} ").toString();
+            if (isOutputFilter) {
+                if (!reListList.isEmpty()) {
+                    return builder.append(" RETURN {var.p},").append(mapSetPairs(mapSetPairsListList(reListList))).append(" ").toString();
+                } else {
+                    return builder.append(" RETURN {var.p},").append(varFilterMapPara).append(" ").toString();
+                }
+            } else {
+                return builder.append(" RETURN {var.p} ").toString();
+            }
         }
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(拼接apoc.map.setPairs函数参数列表)
+     */
+    protected String mapSetPairsListList(List<List<String>> setPairsListList) {
+        StringBuilder builder = new StringBuilder();
+        int size = setPairsListList.size();
+        for (int i = 0; i < size; i++) {
+            List<String> list = setPairsListList.get(i);
+            if (i == 0) {
+                builder.append("[");
+            }
+            if (list.size() == 2) {
+                builder.append("[").append("TOSTRING(ID(").append(list.get(0)).append("))").append(",").append("'").append(escape(list.get(1))).append("'").append("]");
+            } else {
+                throw new RuntimeException("Append apoc.map.setPairs paras error! Parameter list size is not equal to two!" + list.size());
+            }
+            if (i < size - 1) {
+                builder.append(",");
+            }
+            if (i == size - 1) {
+                builder.append("]");
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(字符串转义)
+     */
+    private String escape(String rawString) {
+        return rawString != null ? rawString.replace("'", "\\'") : rawString;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(生成MAP的函数 ： RETURN apoc.map.setPairs ( { }, [[TOSTRING ( 1),'value'],[TOSTRING(2),'value'],[TOSTRING(1),'value2']]))
+     */
+    protected String mapSetPairs(String listListStr) {
+        return "apoc.map.setPairs(" + varFilterMapPara + "," + listListStr + ") AS " + varFilterMapPara;
     }
 
     /**

@@ -5,6 +5,7 @@ package data.lab.ongdb.schema.auto;
  *
  */
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import data.lab.ongdb.algo.AllPaths;
@@ -71,6 +72,12 @@ public class AutoCypher {
      */
     private final static String PROPERTIES_FILTER = "properties_filter";
     private final static String ES_FILTER = "es_filter";
+
+    /**
+     * isOutputFilter:是否返回过滤器与变量的绑定
+     */
+    private static final String varFilterMap = "WITH {} AS vFMap";
+    private static final String varFilterMapPara = "vFMap";
 
     /**
      * @param json: "{"graph":{"nodes":[{"id":"-1024"},{"id":"-70549398"}],"relationships":[{"startNode":"-1024","endNode":"-70549398"}]}}"
@@ -280,14 +287,15 @@ public class AutoCypher {
     /**
      * @param graphPaths:STRING类型路径列表
      * @param indexNode:索引与节点的ID对应关系
-     * @param reFDirectionListMap:方向对应关系 包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
+     * @param reFDirectionListMap:方向对应关系                                包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
      * @param idToLabel:索引节点ID对应的节点标签MAP
      * @param nodeIndex:节点ID和索引ID对应关系
      * @param filterNodeMap:属性过滤器
+     * @param isOutputFilter:是否返回过滤器与变量的绑定，默认false【在WITH中返回变量ID与过滤器的绑定】
      * @return
      * @Description: TODO(拿到路径列表 - 并将索引ID替换为节点ID)
      */
-    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> reFDirectionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
+    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> reFDirectionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap, boolean isOutputFilter) {
         /*
          * 拿到路径列表-并将索引ID替换为节点ID
          * */
@@ -324,7 +332,7 @@ public class AutoCypher {
                      * 使用笛卡尔积列表对SIZE大于1的对象进行筛选
                      * */
                     List<Map<String, Object>> resetMapList = resetMapList(mapList, cartesianList.get(i));
-                    LoopResult loopResult = new LoopResult(pathStr, indexNode, resetMapList, idToLabel, nodeIndex, filterNodeMap);
+                    LoopResult loopResult = new LoopResult(pathStr, indexNode, resetMapList, idToLabel, nodeIndex, filterNodeMap, isOutputFilter);
                     loopResultList.add(loopResult);
                 }
             } else {
@@ -339,14 +347,14 @@ public class AutoCypher {
                          * 重置directionListMap
                          * */
                         List<Map<String, Object>> reDirectionListMap = reDirectionListMap(auDirection, directionListMap);
-                        LoopResult loopResult = new LoopResult(pathStr, indexNode, reDirectionListMap, idToLabel, nodeIndex, filterNodeMap);
+                        LoopResult loopResult = new LoopResult(pathStr, indexNode, reDirectionListMap, idToLabel, nodeIndex, filterNodeMap, isOutputFilter);
                         loopResultList.add(loopResult);
                     }
                 } else {
                     /*
                      * 拿到路径列表-并将索引ID替换为节点ID
                      * */
-                    LoopResult loopResult = new LoopResult(pathStr, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+                    LoopResult loopResult = new LoopResult(pathStr, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap, isOutputFilter);
                     loopResultList.add(loopResult);
                 }
             }
@@ -700,6 +708,7 @@ public class AutoCypher {
      * @param skip:忽略参数
      * @param limit:限制参数【表示匹配多个子图】
      * @param isReTraverseNode:是否允许重复遍历节点【默认不允许】【指graph中每条path中是否允许节点重复】【path之间是允许节点重复的，因为用户有可能这样定义查询图】
+     * @param isOutputFilter:是否返回过滤器与变量的绑定，默认false【在WITH中返回变量ID与过滤器的绑定】
      * @return
      * @Description: TODO(自动生成匹配子图的CYPHER - 【 支持属性过滤器和ES过滤器 】 【 支持匹配环路子图CYPHER生成 】)
      * <p>
@@ -724,7 +733,7 @@ public class AutoCypher {
      */
     @UserFunction(name = "olab.schema.auto.cypher")
     @Description("```\n" +
-            "RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT},{isReTraverseNode}) AS cypher\n" +
+            "RETURN olab.schema.auto.cypher({JSON},{SKIP},{LIMIT},{isReTraverseNode},{outputFilter}) AS cypher\n" +
             "```\n" +
             "```\n" +
             "输入：\n" +
@@ -733,7 +742,7 @@ public class AutoCypher {
             "    过滤器设计：传入查询碎片直接拼接查询碎片\n" +
             "输出：拼接好的CYPHER语句\n" +
             "```")
-    public String cypher(@Name("json") String json, @Name(value = "limit", defaultValue = "0") long skip, @Name(value = "limit", defaultValue = "100") long limit, @Name(value = "limit", defaultValue = "false") boolean isReTraverseNode) {
+    public String cypher(@Name("json") String json, @Name(value = "skip", defaultValue = "0") long skip, @Name(value = "limit", defaultValue = "100") long limit, @Name(value = "isReTraverseNode", defaultValue = "false") boolean isReTraverseNode, @Name(value = "isOutputFilter", defaultValue = "false") boolean isOutputFilter) {
         skip = skip < 0 ? 0 : skip;
         limit = limit < 1 ? 1 : limit;
         /*
@@ -771,12 +780,12 @@ public class AutoCypher {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " field!");
             }
             // 单节点拼接
-            return cypherAppendJustNodes(nodes, skip, limit);
+            return cypherAppendJustNodes(nodes, skip, limit, isOutputFilter);
         } else {
             if (!graphData.containsKey(GRAPH_DATA_NODES_FIELD) || !graphData.containsKey(GRAPH_DATA_RELATIONSHIPS_FIELD)) {
                 throw new IllegalArgumentException("GraphData is no " + GRAPH_DATA_NODES_FIELD + " or " + GRAPH_DATA_RELATIONSHIPS_FIELD + " field!");
             }
-            return cypherAppendNotJustNodes(graphData, skip, limit, isReTraverseNode);
+            return cypherAppendNotJustNodes(graphData, skip, limit, isReTraverseNode, isOutputFilter);
         }
     }
 
@@ -785,7 +794,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO(图对象转换为CYPHER语句)
      */
-    private String cypherAppendNotJustNodes(JSONObject graphData, long skip, long limit, boolean isReTraverseNode) {
+    private String cypherAppendNotJustNodes(JSONObject graphData, long skip, long limit, boolean isReTraverseNode, boolean isOutputFilter) {
         /*
          * 1、确定顶点【一度连边顶点】
          * 2、检测graphData是一个连通图【求弱连通分量】
@@ -843,12 +852,12 @@ public class AutoCypher {
         /*
          * 拼接的路径列表【路径拼接DEBUG】
          * */
-        List<LoopResult> graphNodeIdSeqPaths = replaceIndexId(graphPaths, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap);
+        List<LoopResult> graphNodeIdSeqPaths = replaceIndexId(graphPaths, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap, isOutputFilter);
 
         /*
          * 根据查询代码自动优化拼接多条path
          * */
-        return generateCypher(graphNodeIdSeqPaths, skip, limit, isReTraverseNode);
+        return generateCypher(graphNodeIdSeqPaths, skip, limit, isReTraverseNode, isOutputFilter);
     }
 
     /**
@@ -952,7 +961,7 @@ public class AutoCypher {
      * @return
      * @Description: TODO({ var.p } - 生成子图模式匹配语句)
      */
-    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long skip, long limit, boolean isReTraverseNode) {
+    private String generateCypher(List<LoopResult> graphNodeIdSeqPaths, long skip, long limit, boolean isReTraverseNode, boolean isOutputFilter) {
         /*
          * 长路径优先
          * 过滤属性数量优先
@@ -1004,10 +1013,13 @@ public class AutoCypher {
             builder.append(path.replace("RETURN " + para, "WITH " + withPara));
             builder.append("\n");
         }
-        builder.append(appendReturnGraph(pathParas.toString(), skip, limit));
+        builder.append(appendReturnGraph(pathParas.toString(), skip, limit, isOutputFilter));
         /*
          * 拼接序列中的CYPHER
          * */
+        if (isOutputFilter) {
+            builder.insert(0, varFilterMap + " ");
+        }
         return builder.toString();
     }
 
@@ -1150,11 +1162,19 @@ public class AutoCypher {
      * @return
      * @Description: TODO(准备RETURN GRAPH)
      */
-    private String appendReturnGraph(String pathParas, long skip, long limit) {
+    private String appendReturnGraph(String pathParas, long skip, long limit, boolean isOutputFilter) {
         if (limit > 0) {
-            return "RETURN {graph:[" + pathParas + "]} AS graph SKIP " + skip + " LIMIT " + limit;
+            if (isOutputFilter) {
+                return "RETURN {graph:[" + pathParas + "]} AS graph,"+varFilterMapPara+" SKIP " + skip + " LIMIT " + limit;
+            }else {
+                return "RETURN {graph:[" + pathParas + "]} AS graph SKIP " + skip + " LIMIT " + limit;
+            }
         } else {
-            return "RETURN {graph:[" + pathParas + "]} AS graph";
+            if (isOutputFilter) {
+                return "RETURN {graph:[" + pathParas + "]} AS graph,"+varFilterMapPara;
+            }else {
+                return "RETURN {graph:[" + pathParas + "]} AS graph";
+            }
         }
     }
 
@@ -1268,12 +1288,13 @@ public class AutoCypher {
      * @return
      * @Description: TODO(图模型只有节点)
      */
-    private String cypherAppendJustNodes(JSONArray nodes, long skip, long limit) {
+    private String cypherAppendJustNodes(JSONArray nodes, long skip, long limit, boolean isOutputFilter) {
         StringBuilder cypherBuilder = new StringBuilder();
         long calLimit = calLimit(limit, nodes.size());
         for (Object obj : nodes) {
             JSONObject nObj = (JSONObject) obj;
-            String cypher = nodeCypher(nObj, skip, calLimit);
+            cypherBuilder.append((isOutputFilter ? varFilterMap + " " : ""));
+            String cypher = nodeCypher(nObj, skip, calLimit, isOutputFilter);
             cypherBuilder.append(cypher);
             cypherBuilder.append(" \n");
             cypherBuilder.append(CYPHER_JOINT);
@@ -1295,33 +1316,80 @@ public class AutoCypher {
         }
     }
 
+//    /**
+//     * @param
+//     * @return
+//     * @Description: TODO(节点过滤CYPHER生成)
+//     */
+//    private String nodeCypher(JSONObject nodeObject, long skip, long limit) {
+//
+//        String label = nodeObject.getJSONArray("labels").getString(0);
+//        JSONArray proFilter = nodeObject.getJSONArray("properties_filter");
+//        JSONArray esFilter = nodeObject.getJSONArray("es_filter");
+//
+//        String properties_filter = FilterUtil.propertiesFilter("n", proFilter);
+//        // custom.es.result.bool({es-url},{index-name},{query-dsl})
+//        String es_filter = FilterUtil.esFilter("n", esFilter);
+//
+//        if ("".equals(es_filter) && !"".equals(properties_filter)) {
+//            if (limit > 0) {
+//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
+//            } else {
+//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n";
+//            }
+//        } else if (!"".equals(es_filter) && "".equals(properties_filter)) {
+//            if (limit > 0) {
+//                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
+//            } else {
+//                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n";
+//            }
+//        } else if (!"".equals(properties_filter)) {
+//            if (limit > 0) {
+//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
+//            } else {
+//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
+//            }
+//        } else {
+//            if (limit > 0) {
+//                return "MATCH (n:" + label + ") RETURN n SKIP " + skip + " LIMIT " + limit;
+//            } else {
+//                return "MATCH (n:" + label + ") RETURN n";
+//            }
+//        }
+//    }
+
     /**
      * @param
      * @return
      * @Description: TODO(节点过滤CYPHER生成)
      */
-    private String nodeCypher(JSONObject nodeObject, long skip, long limit) {
+    private String nodeCypher(JSONObject nodeObject, long skip, long limit, boolean isOutputFilter) {
+
         String label = nodeObject.getJSONArray("labels").getString(0);
-        String properties_filter = FilterUtil.propertiesFilter("n", nodeObject.getJSONArray("properties_filter"));
+        JSONArray proFilter = nodeObject.getJSONArray("properties_filter");
+        JSONArray esFilter = nodeObject.getJSONArray("es_filter");
+
+        String properties_filter = FilterUtil.propertiesFilter("n", proFilter);
         // custom.es.result.bool({es-url},{index-name},{query-dsl})
-        String es_filter = FilterUtil.esFilter("n", nodeObject.getJSONArray("es_filter"));
+        String es_filter = FilterUtil.esFilter("n", esFilter);
+
         if ("".equals(es_filter) && !"".equals(properties_filter)) {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter) + " SKIP " + skip + " LIMIT " + limit;
             } else {
-                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n";
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter);
             }
         } else if (!"".equals(es_filter) && "".equals(properties_filter)) {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
+                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter) + " SKIP " + skip + " LIMIT " + limit;
             } else {
-                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n";
+                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter);
             }
         } else if (!"".equals(properties_filter)) {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter) + " SKIP " + skip + " LIMIT " + limit;
             } else {
-                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
+                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter);
             }
         } else {
             if (limit > 0) {
@@ -1330,6 +1398,45 @@ public class AutoCypher {
                 return "MATCH (n:" + label + ") RETURN n";
             }
         }
+    }
+
+    /**
+     * @param isOutputFilter:是否返回过滤器与变量的绑定【在WITH中返回变量ID与过滤器的绑定】
+     * @return
+     * @Description: TODO
+     */
+    private String isOutputFilterFunc(boolean isOutputFilter, JSONArray proFilter, JSONArray esFilter) {
+        // MATCH (n) RETURN apoc.map.setEntry({},TOSTRING(ID(n)),'') LIMIT 10
+        // JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
+        // return string != null ? string.replace("'", "\\'") : string;
+        //
+        // WITH {dasd:2,sad:3} AS map
+        // MATCH (n) WITH apoc.map.setEntry(map,TOSTRING(ID(n)),'') AS map LIMIT 10
+        // MATCH (n) WITH apoc.map.setEntry(map,TOSTRING(ID(n)),'') AS map SKIP 0 LIMIT 10
+        // RETURN map
+        if (isOutputFilter) {
+            /*
+             * 在最终结果的CYPHER之前拼接一个`WITH {} AS vFMap`
+             * */
+            JSONObject object = new JSONObject();
+            if (proFilter != null && !proFilter.isEmpty()) {
+                object.put(PROPERTIES_FILTER, proFilter);
+            }
+            if (esFilter != null && !esFilter.isEmpty()) {
+                object.put(ES_FILTER, esFilter);
+            }
+            if (!object.isEmpty()) {
+                // 过滤器转为字符串
+                String filterStr = JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
+                // 字符串转义
+                String escapeFilterStr = filterStr != null ? filterStr.replace("'", "\\'") : filterStr;
+                StringBuilder builder = new StringBuilder();
+                builder.append(",").append("apoc.map.setEntry(" + varFilterMapPara + ",TOSTRING(ID(n)),'").append(escapeFilterStr).append("') AS ").append(varFilterMapPara);
+                return builder.toString();
+            }
+
+        }
+        return "";
     }
 
     /**

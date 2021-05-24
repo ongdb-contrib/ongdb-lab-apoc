@@ -1,6 +1,5 @@
 package data.lab.ongdb.similarity;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.junit.Rule;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
