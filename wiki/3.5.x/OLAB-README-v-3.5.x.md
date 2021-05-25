@@ -753,3 +753,8 @@ UNWIND rels AS r
 CALL olab.schema.loop.vpath(r,-1) YIELD from,rel,to RETURN (from)-[rel]->(to) AS path
 ```
 
+## 指定生成字段【指定指标的返回字段`_source`】
+```
+RETURN custom.es.result('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1000,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{entity_unique_code:'47a9007e73d24417142253c206b9667e'}}]}},_source:['defineDate','amount']}) AS result
+```
+
