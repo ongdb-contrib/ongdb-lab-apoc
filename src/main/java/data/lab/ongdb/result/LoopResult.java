@@ -237,10 +237,11 @@ public class LoopResult {
             this.paraSeqList.add(nodePara.replace("(", "").replace(")", "").split(":")[0]);
 
             JSONObject nodeFilterObject = filterNodeMap.get(idIdx);
-            String nodePropertiesFilter = FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject);
+            String nodePropertiesFilter = FilterUtil.propertiesFilter("n" + idIdx, nodeFilterObject );
             // 是否增加到ID和过滤条件绑定列表
             if (isOutputFilter) {
-                listList.add(new ArrayList<>(Arrays.asList("n" + idIdx, nodePropertiesFilter)));
+//                listList.add(new ArrayList<>(Arrays.asList("n" + idIdx, FilterUtil.propertiesFilter("{var}", nodeFilterObject ))));
+                listList.add(new ArrayList<>(Arrays.asList("n" + idIdx, FilterUtil.propertiesFilterObj("{var}", nodeFilterObject ))));
             }
             nodeFilter.append(nodePropertiesFilter);
             this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
@@ -262,7 +263,8 @@ public class LoopResult {
                     relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
                     // 是否增加到ID和过滤条件绑定列表
                     if (isOutputFilter) {
-                        listList.add(new ArrayList<>(Arrays.asList(relPara, relPropertiesFilter)));
+//                        listList.add(new ArrayList<>(Arrays.asList(relPara, FilterUtil.propertiesFilter("{var}", map))));
+                        listList.add(new ArrayList<>(Arrays.asList(relPara, FilterUtil.propertiesFilterObj("{var}", map))));
                     }
                     relFilter.append(relPropertiesFilter);
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
@@ -273,7 +275,7 @@ public class LoopResult {
                     relPropertiesFilter = FilterUtil.propertiesFilter(relPara, map);
                     // 是否增加到ID和过滤条件绑定列表
                     if (isOutputFilter) {
-                        listList.add(new ArrayList<>(Arrays.asList(relPara, relPropertiesFilter)));
+                        listList.add(new ArrayList<>(Arrays.asList(relPara, FilterUtil.propertiesFilterObj("{var}", map))));
                     }
                     relFilter.append(relPropertiesFilter);
                     this.propertiesKeySize += FilterUtil.propertiesFilter(nodeFilterObject);
@@ -326,6 +328,34 @@ public class LoopResult {
         }
     }
 
+//    /**
+//     * @param
+//     * @return
+//     * @Description: TODO(拼接apoc.map.setPairs函数参数列表)
+//     */
+//    protected String mapSetPairsListList(List<List<String>> setPairsListList) {
+//        StringBuilder builder = new StringBuilder();
+//        int size = setPairsListList.size();
+//        for (int i = 0; i < size; i++) {
+//            List<String> list = setPairsListList.get(i);
+//            if (i == 0) {
+//                builder.append("[");
+//            }
+//            if (list.size() == 2) {
+//                builder.append("[").append("TOSTRING(ID(").append(list.get(0)).append("))").append(",").append("'").append(escape(list.get(1))).append("'").append("]");
+//            } else {
+//                throw new RuntimeException("Append apoc.map.setPairs paras error! Parameter list size is not equal to two!" + list.size());
+//            }
+//            if (i < size - 1) {
+//                builder.append(",");
+//            }
+//            if (i == size - 1) {
+//                builder.append("]");
+//            }
+//        }
+//        return builder.toString();
+//    }
+
     /**
      * @param
      * @return
@@ -340,7 +370,7 @@ public class LoopResult {
                 builder.append("[");
             }
             if (list.size() == 2) {
-                builder.append("[").append("TOSTRING(ID(").append(list.get(0)).append("))").append(",").append("'").append(escape(list.get(1))).append("'").append("]");
+                builder.append("[").append("'_'+ID(").append(list.get(0)).append(")").append(",").append(list.get(1)).append("]");
             } else {
                 throw new RuntimeException("Append apoc.map.setPairs paras error! Parameter list size is not equal to two!" + list.size());
             }
@@ -357,18 +387,13 @@ public class LoopResult {
     /**
      * @param
      * @return
-     * @Description: TODO(字符串转义)
-     */
-    private String escape(String rawString) {
-        return rawString != null ? rawString.replace("'", "\\'") : rawString;
-    }
-
-    /**
-     * @param
-     * @return
      * @Description: TODO(生成MAP的函数 ： RETURN apoc.map.setPairs ( { }, [[TOSTRING ( 1),'value'],[TOSTRING(2),'value'],[TOSTRING(1),'value2']]))
      */
     protected String mapSetPairs(String listListStr) {
+        // WITH {dasd:2,sad:3} AS map
+        // MATCH (n) WITH apoc.map.setPairs(map,[[TOSTRING(ID(n)),[{filter:'es',query:''}]]]) AS map LIMIT 10
+        // MATCH (n) WITH apoc.map.setPairs(map,[[TOSTRING(ID(n)),[{filter:'pro',query:''}]]]) AS map SKIP 0 LIMIT 10
+        // RETURN map
         return "apoc.map.setPairs(" + varFilterMapPara + "," + listListStr + ") AS " + varFilterMapPara;
     }
 

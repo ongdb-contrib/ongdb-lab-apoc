@@ -50,17 +50,11 @@ public class CustomerProcedures {
 
         try (Transaction tx = db.beginTx()) {
             Node node = db.createNode(Customer);
-
             node.setProperty("name", name);
-
-
             output.add(new NodeResult(node));
-
             log.debug("Creating Customer with Node ID " + node.getId());
-
             tx.success();
         }
-
         return output.stream();
     }
 

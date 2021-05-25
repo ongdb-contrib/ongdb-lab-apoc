@@ -92,6 +92,56 @@ public class FilterUtil {
     }
 
     /**
+     * @param varName:变量名
+     * @param propertiesFilter:属性过滤条件
+     * @return
+     * @Description: TODO(拼接属性过滤条件)
+     */
+    public static String propertiesFilterObj(String varName, JSONObject propertiesFilter) {
+        if (propertiesFilter == null || propertiesFilter.isEmpty()) {
+            return "";
+        }
+        String proFilter = propertiesFilter(varName, propertiesFilter.getJSONArray(PROPERTIES_FILTER));
+        String esFilter = esFilter(varName, propertiesFilter.getJSONArray(ES_FILTER));
+        return appendFilterObj(proFilter, esFilter);
+    }
+
+    private static String appendFilterObj(String proFilter, String esFilter) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        if (proFilter != null && !"".equals(proFilter)) {
+            builder.append("{");
+            builder.append(PROPERTIES_FILTER).append(":");
+            builder.append("'");
+            builder.append(escape(proFilter));
+            builder.append("'");
+            builder.append("}");
+        }
+        if (esFilter != null && !"".equals(esFilter)) {
+            if (proFilter != null && !"".equals(proFilter)) {
+                builder.append(",");
+            }
+            builder.append("{");
+            builder.append(ES_FILTER).append(":");
+            builder.append("'");
+            builder.append(escape(esFilter));
+            builder.append("'");
+            builder.append("}");
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(字符串转义)
+     */
+    private static String escape(String rawString) {
+        return rawString != null ? rawString.replace("'", "\\'") : rawString;
+    }
+
+    /**
      * @param propertiesFilter:属性过滤条件
      * @return
      * @Description: TODO(属性过滤个数 - ES的query计算为一个过滤)
@@ -120,6 +170,21 @@ public class FilterUtil {
         String proFilter = propertiesFilter(varName, (JSONArray) map.get(PROPERTIES_FILTER));
         String esFilter = esFilter(varName, (JSONArray) map.get(ES_FILTER));
         return appendFilter(proFilter, esFilter);
+    }
+
+    /**
+     * @param varName:变量名
+     * @param map:属性过滤条件
+     * @return
+     * @Description: TODO(拼接属性过滤条件)
+     */
+    public static String propertiesFilterObj(String varName, Map<String, Object> map) {
+        if (map == null || map.isEmpty()) {
+            return "";
+        }
+        String proFilter = propertiesFilter(varName, (JSONArray) map.get(PROPERTIES_FILTER));
+        String esFilter = esFilter(varName, (JSONArray) map.get(ES_FILTER));
+        return appendFilterObj(proFilter, esFilter);
     }
 
     /**

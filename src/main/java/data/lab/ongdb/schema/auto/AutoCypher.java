@@ -5,7 +5,6 @@ package data.lab.ongdb.schema.auto;
  *
  */
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import data.lab.ongdb.algo.AllPaths;
@@ -263,26 +262,6 @@ public class AutoCypher {
                 .map(v -> new LoopResult(v, indexNode))
                 .collect(Collectors.toList());
     }
-
-//    /**
-//     * @param graphPaths:STRING类型路径列表
-//     * @param indexNode:索引与节点的ID对应关系
-//     * @param directionListMap:方向对应关系    包含startNode【开始节点ID】、type【关系类型】、endNode【结束节点ID】字段
-//     * @param idToLabel:索引节点ID对应的节点标签MAP
-//     * @param nodeIndex:节点ID和索引ID对应关系
-//     * @param filterNodeMap:属性过滤器
-//     * @return
-//     * @Description: TODO(拿到路径列表 - 并将索引ID替换为节点ID)
-//     */
-//    private List<LoopResult> replaceIndexId(List<String> graphPaths, HashMap<Long, Long> indexNode, List<Map<String, Object>> directionListMap, Map<Long, String> idToLabel, HashMap<Long, Long> nodeIndex, Map<Long, JSONObject> filterNodeMap) {
-//        /*
-//         * 拿到路径列表-并将索引ID替换为节点ID
-//         * */
-//        return graphPaths
-//                .parallelStream()
-//                .map(v -> new LoopResult(v, indexNode, directionListMap, idToLabel, nodeIndex, filterNodeMap))
-//                .collect(Collectors.toList());
-//    }
 
     /**
      * @param graphPaths:STRING类型路径列表
@@ -1165,14 +1144,14 @@ public class AutoCypher {
     private String appendReturnGraph(String pathParas, long skip, long limit, boolean isOutputFilter) {
         if (limit > 0) {
             if (isOutputFilter) {
-                return "RETURN {graph:[" + pathParas + "]} AS graph,"+varFilterMapPara+" SKIP " + skip + " LIMIT " + limit;
-            }else {
+                return "RETURN {graph:[" + pathParas + "]} AS graph," + varFilterMapPara + " SKIP " + skip + " LIMIT " + limit;
+            } else {
                 return "RETURN {graph:[" + pathParas + "]} AS graph SKIP " + skip + " LIMIT " + limit;
             }
         } else {
             if (isOutputFilter) {
-                return "RETURN {graph:[" + pathParas + "]} AS graph,"+varFilterMapPara;
-            }else {
+                return "RETURN {graph:[" + pathParas + "]} AS graph," + varFilterMapPara;
+            } else {
                 return "RETURN {graph:[" + pathParas + "]} AS graph";
             }
         }
@@ -1316,48 +1295,6 @@ public class AutoCypher {
         }
     }
 
-//    /**
-//     * @param
-//     * @return
-//     * @Description: TODO(节点过滤CYPHER生成)
-//     */
-//    private String nodeCypher(JSONObject nodeObject, long skip, long limit) {
-//
-//        String label = nodeObject.getJSONArray("labels").getString(0);
-//        JSONArray proFilter = nodeObject.getJSONArray("properties_filter");
-//        JSONArray esFilter = nodeObject.getJSONArray("es_filter");
-//
-//        String properties_filter = FilterUtil.propertiesFilter("n", proFilter);
-//        // custom.es.result.bool({es-url},{index-name},{query-dsl})
-//        String es_filter = FilterUtil.esFilter("n", esFilter);
-//
-//        if ("".equals(es_filter) && !"".equals(properties_filter)) {
-//            if (limit > 0) {
-//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
-//            } else {
-//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " RETURN n";
-//            }
-//        } else if (!"".equals(es_filter) && "".equals(properties_filter)) {
-//            if (limit > 0) {
-//                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
-//            } else {
-//                return "MATCH (n:" + label + ") WHERE " + es_filter + " RETURN n";
-//            }
-//        } else if (!"".equals(properties_filter)) {
-//            if (limit > 0) {
-//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n SKIP " + skip + " LIMIT " + limit;
-//            } else {
-//                return "MATCH (n:" + label + ") WHERE " + properties_filter + " AND " + es_filter + " RETURN n";
-//            }
-//        } else {
-//            if (limit > 0) {
-//                return "MATCH (n:" + label + ") RETURN n SKIP " + skip + " LIMIT " + limit;
-//            } else {
-//                return "MATCH (n:" + label + ") RETURN n";
-//            }
-//        }
-//    }
-
     /**
      * @param
      * @return
@@ -1400,20 +1337,13 @@ public class AutoCypher {
         }
     }
 
+
     /**
      * @param isOutputFilter:是否返回过滤器与变量的绑定【在WITH中返回变量ID与过滤器的绑定】
      * @return
      * @Description: TODO
      */
     private String isOutputFilterFunc(boolean isOutputFilter, JSONArray proFilter, JSONArray esFilter) {
-        // MATCH (n) RETURN apoc.map.setEntry({},TOSTRING(ID(n)),'') LIMIT 10
-        // JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
-        // return string != null ? string.replace("'", "\\'") : string;
-        //
-        // WITH {dasd:2,sad:3} AS map
-        // MATCH (n) WITH apoc.map.setEntry(map,TOSTRING(ID(n)),'') AS map LIMIT 10
-        // MATCH (n) WITH apoc.map.setEntry(map,TOSTRING(ID(n)),'') AS map SKIP 0 LIMIT 10
-        // RETURN map
         if (isOutputFilter) {
             /*
              * 在最终结果的CYPHER之前拼接一个`WITH {} AS vFMap`
@@ -1426,17 +1356,55 @@ public class AutoCypher {
                 object.put(ES_FILTER, esFilter);
             }
             if (!object.isEmpty()) {
-                // 过滤器转为字符串
-                String filterStr = JSONObject.parseObject(JSON.toJSONString(object)).toJSONString();
-                // 字符串转义
-                String escapeFilterStr = filterStr != null ? filterStr.replace("'", "\\'") : filterStr;
                 StringBuilder builder = new StringBuilder();
-                builder.append(",").append("apoc.map.setEntry(" + varFilterMapPara + ",TOSTRING(ID(n)),'").append(escapeFilterStr).append("') AS ").append(varFilterMapPara);
+                builder.append(",").append("apoc.map.setEntry(" + varFilterMapPara + ",'_'+ID(n),").append(packEscapeFilterStr(object)).append(") AS ").append(varFilterMapPara);
                 return builder.toString();
             }
-
         }
         return "";
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(封装vFMap返回值)
+     */
+    private String packEscapeFilterStr(JSONObject object) {
+        if (object != null && !object.isEmpty()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("[");
+            if (object.containsKey(PROPERTIES_FILTER)) {
+                builder.append("{");
+                builder.append(PROPERTIES_FILTER).append(":");
+                builder.append("'");
+                builder.append(escape(FilterUtil.propertiesFilter("{var}", object.getJSONArray(PROPERTIES_FILTER))));
+                builder.append("'");
+                builder.append("}");
+            }
+            if (object.containsKey(ES_FILTER)) {
+                if (object.containsKey(PROPERTIES_FILTER)) {
+                    builder.append(",");
+                }
+                builder.append("{");
+                builder.append(ES_FILTER).append(":");
+                builder.append("'");
+                builder.append(escape(FilterUtil.esFilter("{var}", object.getJSONArray(ES_FILTER))));
+                builder.append("'");
+                builder.append("}");
+            }
+            builder.append("]");
+            return builder.toString();
+        }
+        return "";
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(字符串转义)
+     */
+    private String escape(String rawString) {
+        return rawString != null ? rawString.replace("'", "\\'") : rawString;
     }
 
     /**
@@ -1575,7 +1543,7 @@ public class AutoCypher {
      * @Description: TODO(生成虚拟图)
      */
     @Procedure(name = "olab.schema.loop.vpath", mode = Mode.READ)
-    @Description("CALL olab.schema.loop.vpath({relationship},{atomicId}]) YIELD from,rel,to RETURN from,rel,to")
+    @Description("CALL olab.schema.loop.vpath({relationship},{atomicId}) YIELD from,rel,to RETURN from,rel,to")
     public Stream<VirtualPathResult> vpath(@Name("relationship") Relationship relationship, @Name("atomicId") Long atomicId) {
         RelationshipType type = relationship.getType();
 

@@ -458,12 +458,12 @@ public class AutoCypherTest {
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "test.json", "UTF-8"), 0,-1,false,true);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-es.json", "UTF-8"), 0,-1,true,true);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-only.json", "UTF-8"), 0,3,true);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), 0,-1,true);
-//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), 0, -1, false, true);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "graph-pro.json", "UTF-8"), 0,-1,true,true);
+        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir + File.separator + "graph-pro-es.json", "UTF-8"), 0, -1, false, true);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-es.json", "UTF-8"), 0,-1,true);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-only.json", "UTF-8"), 0,-1,true);
 //        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para" + File.separator + dir  + File.separator + "node-pro.json", "UTF-8"), 0,-1,true);
-        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), 0,-1,true,false);
+//        String cypher = autoCypher.cypher(FileUtil.readAllLine("auto-cypher-para"  + File.separator + dir + File.separator + "node-pro-es.json", "UTF-8"), 0,-1,true,true);
         System.out.println(cypher + "\n");
 
 //        System.out.println(
