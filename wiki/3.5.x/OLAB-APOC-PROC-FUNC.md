@@ -31,7 +31,7 @@ CALL apoc.custom.asFunction(
 @param {query-dsl}-ES查询
 【返回值类型：MAP】
 RETURN custom.es.result({esuUrl},{indexName},{queryDsl}) AS result
-RETURN custom.es.result('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:100,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{entity_unique_code:'852c1ea85d8dd6b1354aa1a786dbc1db'}}]}}}) AS result
+RETURN custom.es.result('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:100,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:'852c1ea85d8dd6b1354aa1a786dbc1db'}}]}}}) AS result
 ```
 - 安装方式
 ```
