@@ -39,6 +39,7 @@ RETURN {graph:[path1,path2]} AS graph LIMIT 1
 // {var}表示cypher中的变量
 // unique表示图数据库中存储的属性字段
 // hcode表示Elasticsearch中的字段
+// _source表示从ES返回哪些指标字段，必须拼接在query语句之后
 "es_filter": [
           {
             "es_url": "10.20.13.130:9200",
