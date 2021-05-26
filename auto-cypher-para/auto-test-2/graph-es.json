@@ -10,7 +10,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -23,7 +23,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -36,7 +36,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -49,7 +49,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       }
@@ -64,7 +64,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -77,7 +77,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -90,7 +90,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -103,7 +103,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -116,7 +116,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       },
@@ -129,7 +129,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "gh_ind_rel_company_guarantee_company",
-            "query": "{size:1,query:{term:{entity_unique_code:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}}}}"
           }
         ]
       }
