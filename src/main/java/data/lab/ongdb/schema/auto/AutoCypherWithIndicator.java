@@ -46,15 +46,15 @@ public class AutoCypherWithIndicator {
     private final static String FUNC_CUSTOM_ES_RESULT = "custom.es.result";
 
     private final static String FUNC_ES_RAW_SIZE = "{size:1,query";
-    private final static String FUNC_ES_SIZE = "{size:1000,query";
+    private final static String FUNC_ES_SIZE = "{size:10000,query";
 
-    private final static String FUNC_VAR_MARK = "{var}.hcode";
+    private final static String FUNC_VAR = "{var}";
+    private final static String FUNC_VAR_SPLIT = "\\{var\\}";
 
     /*
-    * 数据建模时指定的唯一码值
-    * */
-    private final static String HCODE = "hcode";
-    private final static String HCODE_DETAIL = "hcode_detail";
+     * 数据建模时指定的唯一码值
+     * */
+    private final static String INDICATORS = "indicators";
 
     /**
      * @param relationship:关系
@@ -63,7 +63,7 @@ public class AutoCypherWithIndicator {
      *                                              "96767732": [],
      *                                              "1112350872": [
      *                                              {
-     *                                              "es_filter": "custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:{var}.hcode}}]}}})"
+     *                                              "es_filter": "custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{*:{var}.*}}]}}})"
      *                                              }
      *                                              ]
      *                                              }
@@ -72,26 +72,25 @@ public class AutoCypherWithIndicator {
      *                                              es_filter_execute：
      *                                              custom.es.result.bool 替换为 custom.es.result
      *                                              {size:1,query 替换为 {size:10000,query
-     *                                              {var}.hcode 替换为生成值的查询
+     *                                              {var}.* 替换为生成值的查询【自动解析{var}后面的字段名}】
      *                                              ```
      * @return
-     * @Description: TODO(生成虚拟图时挂上指标数据 - 需要预装函数：custom.es.result)
-     *
+     * @Description: TODO(生成虚拟图时挂上指标数据 - 需要预装函数 ： custom.es.result)
+     * <p>
      * ```
      * CALL apoc.custom.asFunction(
-     *     'es.result',
-     *     'CALL apoc.es.query($esuUrl,$indexName,\'\',null,$queryDsl) YIELD value RETURN value',
-     *     'MAP',
-     *     [['esuUrl','STRING'],['indexName','STRING'],['queryDsl','MAP']],
-     *     false,
-     *     '返回ES查询结果'
+     * 'es.result',
+     * 'CALL apoc.es.query($esuUrl,$indexName,\'\',null,$queryDsl) YIELD value RETURN value',
+     * 'MAP',
+     * [['esuUrl','STRING'],['indexName','STRING'],['queryDsl','MAP']],
+     * false,
+     * '返回ES查询结果'
      * );
      * ```
      * ```
      * RETURN custom.es.result({esuUrl},{indexName},{queryDsl}) AS result
      * RETURN custom.es.result('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:100,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:'852c1ea85d8dd6b1354aa1a786dbc1db'}}]}}}) AS result
      * ```
-     *
      */
     @Procedure(name = "olab.schema.loop.vpath.ind", mode = Mode.READ)
     @Description("CALL olab.schema.loop.vpath.ind({relationship},{atomicId},{vFMap}) YIELD from,rel,to RETURN from,rel,to")
@@ -133,9 +132,9 @@ public class AutoCypherWithIndicator {
         long rId = relationship.getId();
 
         Map<String, Map<String, Object>> revFMap = new HashMap<>();
-        revFMap.put(VFMAP_KEY_PREFIX + fId, excuteQueryInd(parseESQuery(vFMap.get(VFMAP_KEY_PREFIX + fId), fromNode.getAllProperties().get(HCODE))));
-        revFMap.put(VFMAP_KEY_PREFIX + tId, excuteQueryInd(parseESQuery(vFMap.get(VFMAP_KEY_PREFIX + tId), toNode.getAllProperties().get(HCODE))));
-        revFMap.put(VFMAP_KEY_PREFIX + rId, excuteQueryInd(parseESQuery(vFMap.get(VFMAP_KEY_PREFIX + rId), relationship.getAllProperties().get(HCODE))));
+        revFMap.put(VFMAP_KEY_PREFIX + fId, excuteQueryInd(parseESQuery(vFMap.get(VFMAP_KEY_PREFIX + fId), fromNode.getAllProperties())));
+        revFMap.put(VFMAP_KEY_PREFIX + tId, excuteQueryInd(parseESQuery(vFMap.get(VFMAP_KEY_PREFIX + tId), toNode.getAllProperties())));
+        revFMap.put(VFMAP_KEY_PREFIX + rId, excuteQueryInd(parseESQuery(vFMap.get(VFMAP_KEY_PREFIX + rId), relationship.getAllProperties())));
 
         VirtualNode from = new VirtualNode(fId * atomicId, fromNode.getLabels(), addMap(fromNode.getAllProperties(), revFMap.get(VFMAP_KEY_PREFIX + fId)), null);
         VirtualNode to = new VirtualNode(tId * atomicId, toNode.getLabels(), addMap(toNode.getAllProperties(), revFMap.get(VFMAP_KEY_PREFIX + tId)), null);
@@ -159,7 +158,7 @@ public class AutoCypherWithIndicator {
                         JSONObject jsonObject = (JSONObject) v;
                         return jsonObject.getJSONObject("_source");
                     }).collect(Collectors.toCollection(JSONArray::new));
-            allProperties.put(HCODE_DETAIL, jsonArray.toJSONString());
+            allProperties.put(INDICATORS, jsonArray.toJSONString());
         }
         return allProperties;
     }
@@ -186,10 +185,10 @@ public class AutoCypherWithIndicator {
      * @return
      * @Description: TODO(解析过滤器中的ES查询语句)
      */
-    private String parseESQuery(Object object, Object entityUniqueCode) {
+    private String parseESQuery(Object object, Map<String, Object> map) {
         List<Map<String, String>> filterList = (List<Map<String, String>>) object;
         Optional<Map<String, String>> rawEsFilterMap = filterList.stream().filter(v -> v.containsKey(ES_FILTER)).findFirst();
-        return rawEsFilterMap.map(stringStringMap -> parseExeEsQuery(stringStringMap.get(ES_FILTER), entityUniqueCode)).orElse(null);
+        return rawEsFilterMap.map(stringStringMap -> parseExeEsQuery(stringStringMap.get(ES_FILTER), map)).orElse(null);
     }
 
     /**
@@ -197,11 +196,83 @@ public class AutoCypherWithIndicator {
      * @return
      * @Description: TODO(将esFilterQuery进行替换操作)
      */
-    private String parseExeEsQuery(String esFilterQuery, Object entityUniqueCode) {
+    private String parseExeEsQuery(String esFilterQuery, Map<String, Object> map) {
+        /*
+         * 解析FUNC_VAR_FIELD字段
+         * */
+        String funcVarField = parseFuncVarField(esFilterQuery);
+        if (funcVarField == null) {
+            throw new RuntimeException("FUNC_VAR_FIELD is not parsed!");
+        }
+        Object entityUniqueCode = map.get(funcVarField);
         if (entityUniqueCode != null && !"".equals(entityUniqueCode)) {
             return "RETURN " + esFilterQuery.replace(FUNC_CUSTOM_ES_RESULT_BOOL, FUNC_CUSTOM_ES_RESULT)
                     .replace(FUNC_ES_RAW_SIZE, FUNC_ES_SIZE)
-                    .replace(FUNC_VAR_MARK, "'" + entityUniqueCode + "'")
+                    .replace(FUNC_VAR + "." + funcVarField, "'" + entityUniqueCode + "'")
+                    + " AS result";
+        }
+        return null;
+    }
+
+    /**
+     * @param esFilterQuery:ES过滤器语句
+     * @return
+     * @Description: TODO（从ES过滤器中提取图库对应的字段）
+     */
+    protected String parseFuncVarField(String esFilterQuery) {
+        String[] temps = esFilterQuery.split(FUNC_VAR_SPLIT);
+        StringBuilder builder = new StringBuilder();
+        char[] chars = temps[1].toCharArray();
+        byte[] b = new byte[chars.length];
+        for (int i = 1; i < chars.length; i++) {
+            b[i] = (byte) chars[i];
+            if (isStdKey(b[i]) || chars[i] == '_') {
+                builder.append(chars[i]);
+            } else {
+                break;
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(判断字符是否满足属性的必要条件)
+     */
+    private boolean isStdKey(byte bt) {
+        /*
+         * 汉字：[0x4e00,0x9fa5] 或  十进制[19968,40869]
+         * 数字：[0x30,0x39] 或   十进制[48, 57]
+         * 小写字母：[0x61,0x7a] 或  十进制[97, 122]
+         * 大写字母：[0x41,0x5a] 或  十进制[65, 90]
+         * */
+        return  // 小写字母
+                (bt >= 97 && bt <= 122) ||
+                        // 大写字母
+                        (bt >= 65 && bt <= 90) ||
+                        // 数字
+                        (bt >= 48 && bt <= 57);
+    }
+
+    /**
+     * @param esFilterQuery:ES查询
+     * @param entityUniqueCode:关联的值
+     * @return
+     * @Description: TODO(将esFilterQuery进行替换操作)
+     */
+    private String parseExeEsQuery(String esFilterQuery, String entityUniqueCode) {
+        /*
+         * 解析FUNC_VAR_FIELD字段
+         * */
+        String funcVarField = parseFuncVarField(esFilterQuery);
+        if (funcVarField == null) {
+            throw new RuntimeException("FUNC_VAR_FIELD is not parsed!");
+        }
+        if (entityUniqueCode != null && !"".equals(entityUniqueCode)) {
+            return "RETURN " + esFilterQuery.replace(FUNC_CUSTOM_ES_RESULT_BOOL, FUNC_CUSTOM_ES_RESULT)
+                    .replace(FUNC_ES_RAW_SIZE, FUNC_ES_SIZE)
+                    .replace(FUNC_VAR + "." + funcVarField, "'" + entityUniqueCode + "'")
                     + " AS result";
         }
         return null;
@@ -215,8 +286,8 @@ public class AutoCypherWithIndicator {
      */
     @UserFunction(name = "olab.es.filter.transfer")
     @Description("RETURN olab.es.filter.transfer({esFilter},{entityUniqueCode}) AS esQuery")
-    public String esFilterTransfer(@Name("esFilter") String esFilter,@Name("entityUniqueCode") String entityUniqueCode) {
-        return parseExeEsQuery(esFilter,entityUniqueCode);
+    public String esFilterTransfer(@Name("esFilter") String esFilter, @Name("entityUniqueCode") String entityUniqueCode) {
+        return parseExeEsQuery(esFilter, entityUniqueCode);
     }
 }
 

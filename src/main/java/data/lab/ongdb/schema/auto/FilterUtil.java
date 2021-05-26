@@ -67,10 +67,10 @@ public class FilterUtil {
                 String esUrl = object.getString("es_url");
                 String indexName = object.getString("index_name");
                 String query = object.getString("query");
-                if (query == null || !query.contains("hcode:{var}")) {
-                    throw new IllegalArgumentException("ES Filter error - Missing：{term:{hcode:{var}}}");
+                if (query == null || !query.contains(":{var}")) {
+                    throw new IllegalArgumentException("ES Filter error - Missing：{term:{*:{var}.*}}");
                 }
-                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query.replace("hcode:{var}", "hcode:" + varName + ".hcode"));
+                return ES_RESULT_BOOL_FILTER.replace("{es-url}", "'" + esUrl + "'").replace("{index-name}", "'" + indexName + "'").replace("{query-dsl}", query.replace("{var}", "" + varName));
             }
         }
         return "";

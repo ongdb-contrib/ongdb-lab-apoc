@@ -1337,7 +1337,6 @@ public class AutoCypher {
         }
     }
 
-
     /**
      * @param isOutputFilter:是否返回过滤器与变量的绑定【在WITH中返回变量ID与过滤器的绑定】
      * @return

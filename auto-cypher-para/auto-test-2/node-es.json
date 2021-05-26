@@ -10,7 +10,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "dl_default_indicator_def",
-            "query": "{size:1,query:{term:{hcode:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}.hcode}}}"
           }
         ]
       },
@@ -23,7 +23,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "dl_default_indicator_def",
-            "query": "{size:1,query:{term:{hcode:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}.hcode}}}"
           }
         ]
       },
@@ -36,7 +36,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "dl_default_indicator_def",
-            "query": "{size:1,query:{term:{hcode:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}.hcode}}}"
           }
         ]
       },
@@ -49,7 +49,7 @@
           {
             "es_url": "10.20.13.130:9200",
             "index_name": "dl_default_indicator_def",
-            "query": "{size:1,query:{term:{hcode:{var}}}}"
+            "query": "{size:1,query:{term:{hcode:{var}.hcode}}}"
           }
         ]
       }
