@@ -778,6 +778,16 @@ CALL olab.schema.loop.vnode(n,-1) YIELD node RETURN node
 
 ## 图数据返回的Relationship和Node封装为标准JSON格式【可转换为python中DataFrame】
 ```
+支持对图数据返回的Relationship和Node封装为标准JSON格式【对于实体包含二级属性的情况，仅支持对二级属性的JSONArray.toJSONString()字符串转换为List<Map<String,Object>>】
+id:表示实体唯一ID 
+label:节点实体标签 
+pros:实体属性 
+type:关系实体类型
+Relationship模式：挂好指标的图模型，返回结构为弱连通图即为Graph【*表示可能会出现多个】【`f_`表示from节点，`r_`表示关系，`t_`表示to节点】
+Node模式：挂好指标的图模型，返回结构为只包含节点即为Node【*表示可能会出现多个】【`n_`表示节点】
+```
+
+```
 入参：
      * @param object:支持传入Node和Relationship【传入Node时只定义fIndicators和fromPrefix即可，也可以直接使用默认值】
      * @param fIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
