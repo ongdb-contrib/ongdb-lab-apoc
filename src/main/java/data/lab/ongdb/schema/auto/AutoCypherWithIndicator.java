@@ -16,6 +16,8 @@ import org.neo4j.graphdb.*;
 import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -390,13 +392,13 @@ public class AutoCypherWithIndicator {
     }
 
     /**
-     * @param object:支持传入Node和Relationship    【传入Node时只定义fIndicators和fromPrefix即可，也可以直接使用默认值】
-     * @param fIndicators:对实体哪个属性执行ListMap的转换
-     * @param rIndicators:对实体哪个属性执行ListMap的转换
-     * @param tIndicators:对实体哪个属性执行ListMap的转换
-     * @param fromPrefix:from节点属性前缀
-     * @param relPrefix:from节点属性前缀
-     * @param toPrefix:from节点属性前缀
+     * @param object:支持传入Node和Relationship【传入Node时只定义fIndicators和fromPrefix即可，也可以直接使用默认值】
+     * @param fIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
+     * @param rIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
+     * @param tIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
+     * @param fromPrefix:from节点属性前缀【默认值：f】
+     * @param relPrefix:from节点属性前缀【默认值：r】
+     * @param toPrefix:from节点属性前缀【默认值：t】
      * @return
      * @Description: TODO(relationship和node转换为map)
      */
@@ -497,12 +499,14 @@ public class AutoCypherWithIndicator {
             }
         }
         Object value = pros.get(indicators);
-        if (pros.containsKey(indicators) && String.valueOf(value).contains(JSON_ARRAY_STRING_PREFIX)) {
+        if (indicators != null && pros.containsKey(indicators) && String.valueOf(value).contains(JSON_ARRAY_STRING_PREFIX)) {
             return transferMapList(prefix, indicators, value, map);
         } else {
-            map.put(prefix + "pros_" + indicators, value);
-            prosMapList.add(map);
+            if (indicators != null) {
+                map.put(prefix + "pros_" + indicators, value);
+            }
         }
+        prosMapList.add(map);
         return prosMapList;
     }
 
@@ -521,6 +525,9 @@ public class AutoCypherWithIndicator {
                         Map<String, Object> resetMap = new HashMap<>(rawMap);
                         for (String mapKey : map.keySet()) {
                             Object mapValue = map.get(mapKey);
+                            if (mapValue instanceof BigDecimal || mapValue instanceof BigInteger) {
+                                mapValue = String.valueOf(mapValue);
+                            }
                             resetMap.put(prefix + "pros_" + key + "_" + mapKey, mapValue);
                         }
                         return resetMap;

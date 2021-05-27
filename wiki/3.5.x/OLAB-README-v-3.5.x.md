@@ -780,12 +780,12 @@ CALL olab.schema.loop.vnode(n,-1) YIELD node RETURN node
 ```
 入参：
      * @param object:支持传入Node和Relationship【传入Node时只定义fIndicators和fromPrefix即可，也可以直接使用默认值】
-     * @param fIndicators:对实体哪个属性执行ListMap的转换
-     * @param rIndicators:对实体哪个属性执行ListMap的转换
-     * @param tIndicators:对实体哪个属性执行ListMap的转换
-     * @param fromPrefix:from节点属性前缀
-     * @param relPrefix:from节点属性前缀
-     * @param toPrefix:from节点属性前缀
+     * @param fIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
+     * @param rIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
+     * @param tIndicators:对实体哪个属性执行ListMap的转换【默认值：indicators】
+     * @param fromPrefix:from节点属性前缀【默认值：f】
+     * @param relPrefix:from节点属性前缀【默认值：r】
+     * @param toPrefix:from节点属性前缀【默认值：t】
 ```
 - 【案例一】节点转换
 ```
@@ -820,6 +820,18 @@ CALL apoc.cypher.run(cypher,{}) YIELD value WITH value.n AS n,value.vFMap AS vFM
 CALL olab.schema.loop.vnode.ind(n,-1,vFMap,1) YIELD node WITH node
 RETURN olab.result.transfer(node,'indicators',null,null,'n',null,null)
 ```
-
-
+- 【案例四】担保网络图结构与指标导出为python中DataFrame支持的格式
+```
+MATCH (:HORGGuaranteeV003)-[r]->(:HORGGuaranteeV003) WITH r LIMIT 100
+WITH olab.result.transfer(r,null,'guarantee_detail',null) AS mapList
+UNWIND mapList AS map
+RETURN map
+```
+- 【案例五】担保网络图结构与指标导出为python中DataFrame支持的格式
+```
+MATCH (n:HORGGuaranteeV003) WITH n LIMIT 10
+WITH olab.result.transfer(n,null,null,null,'node',null,null) AS mapList
+UNWIND mapList AS map
+RETURN map
+```
 
