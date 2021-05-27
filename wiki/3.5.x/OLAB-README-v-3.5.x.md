@@ -719,6 +719,18 @@ RETURN olab.schema.auto.cypher('{"graph":{"nodes":[{"id":"256","labels":["行业
 ```
 WITH {} AS vFMap MATCH p0=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to1:持股]->(n1:公司) WHERE n6<>n5 AND n6<>n0 AND n6<>n1 AND n5<>n0 AND n5<>n1 AND n0<>n1 AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n0.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n1.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r5to6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to1.hcode}}}) WITH n6,n5,n0,n1,p0,apoc.map.setPairs(vFMap,[[TOSTRING(ID(n6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r5to6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n0)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to1)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n1)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]]]) AS vFMap MATCH p1=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to2:担保]->(n2:公司) WHERE custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n0.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n2.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r5to6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to2.hcode}}}) WITH n6,n5,n0,n1,p0,n2,p1,apoc.map.setPairs(vFMap,[[TOSTRING(ID(n6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r5to6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n0)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to2)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n2)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]]]) AS vFMap MATCH p2=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to3:属于]->(n3:位置) WHERE custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n0.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n3.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r5to6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to3.hcode}}}) WITH n6,n5,n0,n1,p0,n2,p1,n3,p2,apoc.map.setPairs(vFMap,[[TOSTRING(ID(n6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r5to6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n0)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to3)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n3)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]]]) AS vFMap MATCH p3=(n6:行业)<-[r5to6:上下游]-(n5:行业)<-[r0to5:属于]-(n0:公司)-[r0to4:生产]->(n4:产品) WHERE custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n0.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:n4.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r5to6.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to5.hcode}}}) AND custom.es.result.bool('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1,query:{term:{hcode:r0to4.hcode}}}) WITH n6,n5,n0,n1,p0,n2,p1,n3,p2,n4,p3,apoc.map.setPairs(vFMap,[[TOSTRING(ID(n6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r5to6)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to5)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n0)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(r0to4)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]],[TOSTRING(ID(n4)),[,{es_filter:'custom.es.result.bool(\'10.20.13.130:9200\',\'gh_ind_rel_company_guarantee_company\',{size:1,query:{term:{hcode:{var}.hcode}}})'}]]]) AS vFMap RETURN {graph:[p0,p1,p2,p3]} AS graph,vFMap SKIP 0 LIMIT 10
 ```
+#### 生成虚拟图并挂上指标数据
+```
+WITH '{"graph":{"nodes":[{"id":"1","labels":["公司"],"properties_filter":[{"name":"{var}.name=\'上海康达化工新材料集团股份有限公司\'"}]},{"id":"2","labels":["行业"],"properties_filter":[{"name":"{var}.name=\'化工\'"}]},{"id":"3","labels":["公司"]},{"id":"4","labels":["公司"]},{"id":"5","labels":["公司"]},{"id":"6","labels":["公司"]}],"relationships":[{"id":"1","type":"属于","startNode":"1","endNode":"2"},{"id":"2","type":"属于","startNode":"3","endNode":"2"},{"id":"3","type":"担保","startNode":"3","endNode":"4","es_filter":[{"es_url":"10.20.13.130:9200","index_name":"gh_ind_rel_company_guarantee_company","query":"{size:1,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:{var}.hcode}}]}},_source:[\'defineDate\',\'amount\']}"}]},{"id":"4","type":"担保","startNode":"4","endNode":"5","es_filter":[{"es_url":"10.20.13.130:9200","index_name":"gh_ind_rel_company_guarantee_company","query":"{size:1,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:{var}.hcode}}]}},_source:[\'defineDate\',\'amount\']}"}]},{"id":"5","type":"担保","startNode":"5","endNode":"6","es_filter":[{"es_url":"10.20.13.130:9200","index_name":"gh_ind_rel_company_guarantee_company","query":"{size:1,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:{var}.hcode}}]}},_source:[\'defineDate\',\'amount\']}"}]}]}}' as json
+WITH olab.schema.auto.cypher(json,-1,3,false,true) AS cypher
+CALL apoc.cypher.run(cypher,{}) YIELD value WITH randomUUID() AS uniqueGraphID,value.graph AS graph,value.graph.graph AS paths,value.vFMap AS vFMap
+UNWIND paths AS path
+WITH RELATIONSHIPS(path) AS rels,vFMap,graph,uniqueGraphID
+UNWIND rels AS r
+// 生成虚拟图并挂上指标数据【从ES获取图的指标数据】
+// path：虚拟路径，vFMap：过滤器与实体ID的绑定，graph：以图搜图的原始匹配结果，uniqueGraphID：子图与虚拟子图的UUID唯一标记
+CALL olab.schema.loop.vpath.ind(r,-1,vFMap) YIELD from,rel,to RETURN (from)-[rel]->(to) AS path,vFMap,graph,uniqueGraphID
+```
 
 ## 使用笛卡尔乘积算法
 ```
@@ -757,4 +769,57 @@ CALL olab.schema.loop.vpath(r,-1) YIELD from,rel,to RETURN (from)-[rel]->(to) AS
 ```
 RETURN custom.es.result('10.20.13.130:9200','gh_ind_rel_company_guarantee_company',{size:1000,query:{bool:{filter:{bool:{must:[{range:{amount:{gte:100000}}}]}},must:[{term:{hcode:'47a9007e73d24417142253c206b9667e'}}]}},_source:['defineDate','amount']}) AS result
 ```
+
+## 生成虚拟节点
+```
+MATCH (n) WITH n LIMIT 25
+CALL olab.schema.loop.vnode(n,-1) YIELD node RETURN node
+```
+
+## 图数据返回的Relationship和Node封装为标准JSON格式【可转换为python中DataFrame】
+```
+入参：
+     * @param object:支持传入Node和Relationship【传入Node时只定义fIndicators和fromPrefix即可，也可以直接使用默认值】
+     * @param fIndicators:对实体哪个属性执行ListMap的转换
+     * @param rIndicators:对实体哪个属性执行ListMap的转换
+     * @param tIndicators:对实体哪个属性执行ListMap的转换
+     * @param fromPrefix:from节点属性前缀
+     * @param relPrefix:from节点属性前缀
+     * @param toPrefix:from节点属性前缀
+```
+- 【案例一】节点转换
+```
+MATCH (n) WITH n LIMIT 10
+RETURN olab.result.transfer(n,'indicators',null,null,'n',null,null) AS mapList
+// 使用默认参数
+MATCH (n) WITH n LIMIT 10
+RETURN olab.result.transfer(n) AS mapList
+```
+```
+MATCH (n) WITH n LIMIT 10
+WITH olab.result.transfer(n) AS mapList
+UNWIND mapList AS map
+RETURN map
+```
+- 【案例二】关系转换
+```
+MATCH ()-[r]->() WITH r LIMIT 10
+RETURN olab.result.transfer(r,'indicators','indicators','indicators','f','r','t') AS mapList
+// 使用默认参数
+MATCH ()-[r]->() WITH r LIMIT 10
+WITH olab.result.transfer(r) AS mapList
+UNWIND mapList AS map
+RETURN map
+```
+- 【案例三】虚拟图节点挂指标案例
+```
+WITH '{"graph":{"nodes":[{"id":"1","labels":["公司"],"properties_filter":[{"name":"{var}.name=\'上海康达化工新材料集团股份有限公司\'"}]},{"id":"2","labels":["行业"],"properties_filter":[{"name":"{var}.name=\'化工\'"}]},{"id":"3","labels":["公司"]},{"id":"4","labels":["公司"]},{"id":"5","labels":["证券"],"es_filter":[{"es_url":"10.20.13.130:9200","index_name":"dl_default_indicator_def,dl_default_indicator_value","query":"{size:1,query:{bool:{must:[{term:{security_code:{var}.hcode}}]}},_source:[\'ind_der_name\']}"}]},{"id":"6","labels":["公司"]}]}}' as json
+WITH olab.schema.auto.cypher(json,-1,100,false,true) AS cypher
+CALL apoc.cypher.run(cypher,{}) YIELD value WITH value.n AS n,value.vFMap AS vFMap
+// 生成虚拟节点并挂上指标数据【从ES获取图的指标数据】
+CALL olab.schema.loop.vnode.ind(n,-1,vFMap,1) YIELD node WITH node
+RETURN olab.result.transfer(node,'indicators',null,null,'n',null,null)
+```
+
+
 

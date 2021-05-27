@@ -1330,9 +1330,9 @@ public class AutoCypher {
             }
         } else {
             if (limit > 0) {
-                return "MATCH (n:" + label + ") RETURN n SKIP " + skip + " LIMIT " + limit;
+                return "MATCH (n:" + label + ") RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter) + " SKIP " + skip + " LIMIT " + limit;
             } else {
-                return "MATCH (n:" + label + ") RETURN n";
+                return "MATCH (n:" + label + ") RETURN n" + isOutputFilterFunc(isOutputFilter, proFilter, esFilter);
             }
         }
     }
@@ -1354,11 +1354,13 @@ public class AutoCypher {
             if (esFilter != null && !esFilter.isEmpty()) {
                 object.put(ES_FILTER, esFilter);
             }
+            StringBuilder builder = new StringBuilder();
             if (!object.isEmpty()) {
-                StringBuilder builder = new StringBuilder();
                 builder.append(",").append("apoc.map.setEntry(" + varFilterMapPara + ",'_'+ID(n),").append(packEscapeFilterStr(object)).append(") AS ").append(varFilterMapPara);
-                return builder.toString();
+            } else {
+                builder.append(",").append(varFilterMapPara);
             }
+            return builder.toString();
         }
         return "";
     }
@@ -1556,6 +1558,19 @@ public class AutoCypher {
 
         Relationship rel = new VirtualRelationship(relationship.getId() * atomicId, from, to, type).withProperties(relationship.getAllProperties());
         return Stream.of(new VirtualPathResult(from, rel, to));
+    }
+
+    /**
+     * @param node:节点
+     * @param atomicId:原子性ID【对一条关系中的关系ID和节点ID都乘这个值】
+     * @return
+     * @Description: TODO(生成虚拟节点)
+     */
+    @Procedure(name = "olab.schema.loop.vnode", mode = Mode.READ)
+    @Description("CALL olab.schema.loop.vnode({node},{atomicId}) YIELD node RETURN node")
+    public Stream<NodeResult> vnode(@Name("node") Node node, @Name("atomicId") Long atomicId) {
+        VirtualNode virtualNode = new VirtualNode(node.getId() * atomicId, node.getLabels(), node.getAllProperties(), null);
+        return Stream.of(new NodeResult(virtualNode));
     }
 
     static class AuDirection {

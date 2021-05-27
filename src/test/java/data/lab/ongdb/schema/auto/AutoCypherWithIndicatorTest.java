@@ -1,8 +1,13 @@
 package data.lab.ongdb.schema.auto;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Result;
+import org.neo4j.harness.junit.Neo4jRule;
 
-import static org.junit.Assert.*;
+import java.util.List;
+import java.util.Map;
 
 /*
  *
@@ -17,6 +22,9 @@ import static org.junit.Assert.*;
  * @date 2021/5/26 9:53
  */
 public class AutoCypherWithIndicatorTest {
+
+    @Rule
+    public Neo4jRule neo4j = new Neo4jRule().withFunction(AutoCypherWithIndicator.class);
 
     @Test
     public void parseFuncVarField01() {
@@ -53,6 +61,22 @@ public class AutoCypherWithIndicatorTest {
         for (String string : strings) {
             System.out.println(string);
         }
+    }
+
+    @Test
+    public void name() {
+        String JSON_ARRAY_PRE = "[{\"";
+        String raw = "[{\"amount\":210000000,\"defineDate\":20110414000000},{\"amount\":210000000,\"defineDate\":20110414000000}]";
+        System.out.println(raw.contains(JSON_ARRAY_PRE));
+    }
+
+    @Test
+    public void graphResultTransfer() {
+        GraphDatabaseService db = neo4j.getGraphDatabaseService();
+        db.execute("CREATE (n:Test) SET n:Person,n.name='test',n.indicators='[{\"ind_der_name\":\"国星光电:按产品划分:其他业务:主营业务成本占比\"}]'");
+        Result result = db.execute("MATCH (n) RETURN olab.result.transfer(n) AS listMap");
+        List<Map<String, Object>> mapList = (List<Map<String, Object>>) result.next().get("listMap");
+        mapList.forEach(System.out::println);
     }
 }
 
