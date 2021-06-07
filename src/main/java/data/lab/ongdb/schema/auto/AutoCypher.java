@@ -795,7 +795,14 @@ public class AutoCypher {
          * 转换图结构为矩阵寻找所有子图路径：
          * */
         // 生成虚拟节点ID-使用INDEX替换
-        JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD);
+        // NODE ID升序排序
+        JSONArray nodes = graphData.getJSONArray(GRAPH_DATA_NODES_FIELD)
+               .parallelStream().sorted((v1, v2) -> {
+            JSONObject object1 = (JSONObject) v1;
+            JSONObject object2 = (JSONObject) v2;
+            return object1.getInteger(ID) - object2.getInteger(ID);
+        }).collect(Collectors.toCollection(JSONArray::new));
+
         HashMap<String, HashMap<Long, Long>> idMap = transferNodeIndex(nodes);
         HashMap<Long, Long> nodeIndex = idMap.get(ID_MAP_TO_VID);
         HashMap<Long, Long> indexNode = idMap.get(VID_MAP_TO_ID);
@@ -1465,13 +1472,6 @@ public class AutoCypher {
 
         HashMap<Long, Long> nodeIndex = new HashMap<>();
         HashMap<Long, Long> indexNode = new HashMap<>();
-
-        // NODE ID升序排序
-        nodes = nodes.parallelStream().sorted((v1, v2) -> {
-            JSONObject object1 = (JSONObject) v1;
-            JSONObject object2 = (JSONObject) v2;
-            return object1.getInteger(ID) - object2.getInteger(ID);
-        }).collect(Collectors.toCollection(JSONArray::new));
 
         for (long i = 0; i < nodes.size(); i++) {
             JSONObject node = nodes.getJSONObject(Math.toIntExact(i));
