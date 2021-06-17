@@ -849,3 +849,17 @@ UNWIND mapList AS map
 RETURN map
 ```
 
+## 对数计算函数
+```
+// 计算对数：返回（底数是e）double值的自然对数；等价于：x=ln10或x=loge(10），即以e为底的自然对数。
+RETURN olab.math.log({value}) AS value
+// 计算对数：返回参数与1的和的自然对数。
+RETURN olab.math.log1p({value}) AS value
+// 计算对数：以10为底的对数
+RETURN olab.math.log10({value}) AS value
+// 计算对数：以base为底value的对数
+RETURN olab.math.logWithBase({value},{base})
+```
+
+
+
